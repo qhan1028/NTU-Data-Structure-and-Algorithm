@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 #include "biginteger_for_euclid.h"
-#define MAXDIGIT 256
+#define MAXDIGIT 100000
 using namespace std;
 
 BigInteger::BigInteger() 

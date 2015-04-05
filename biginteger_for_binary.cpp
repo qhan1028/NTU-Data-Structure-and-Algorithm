@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 #include "biginteger_for_binary.h"
-#define MAXDIGIT 256
+#define MAXDIGIT 1000000
 using namespace std;
 
 BigInteger::BigInteger() 
