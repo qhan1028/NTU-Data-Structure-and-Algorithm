@@ -1,13 +1,11 @@
-#include <iostream>
-#include <cstdio>
-#include <cstdlib>
-#include <vector>
-#include <string>
+#include <iostream> //cin cout
+#include <cstdio> //printf scanf fscanf
+#include <cstdlib> //qsort
+#include <vector> //vector
+#include <string> //string compare
 using namespace std;
 #define MAX 150000000
 #define URL_MAX 30
-#define PRINT 1
-#define GET_RATIO 2
 
 class DATA_USER {
 public:
@@ -46,10 +44,10 @@ public:
 
 	void Read();
 
-	double Get(int&, int&, int&, int&, int&, int);
+	double Get(int&, int&, int&, int&, int&);
 	void Clicked(int&);
 	void Impressed(int&, int&);
-	void Profit(int&, int&);
+	void Profit(int&, double&);
 	void Quit();
 
 	DATA_USER *USER;
@@ -61,7 +59,6 @@ DATA::DATA()
 	USER = new DATA_USER[MAX];
 	AD = new DATA_AD[MAX];
 }
-
 
 DATA::~DATA()
 {
@@ -110,7 +107,7 @@ void DATA::Read()
 	fclose(ptr);
 }
 
-double DATA::Get(int& user, int& ad, int& query, int& pos, int& depth, int function)
+double DATA::Get(int& user, int& ad, int& query, int& pos, int& depth)
 {
 	double sum_click = 0, sum_impression = 0;
 	for (int i = 0 ; i < USER[user].Click.size() ; i++) {
@@ -122,16 +119,9 @@ double DATA::Get(int& user, int& ad, int& query, int& pos, int& depth, int funct
 			sum_impression += USER[user].Impression[i];
 		}
 	}
-	switch (function) {
-		case PRINT : 
-		printf("********************\n");
-		printf("%d %d\n", sum_click, sum_impression);
-		printf("********************\n");
-		break;
-		case GET_RATIO :
-		return (sum_click/sum_impression);
-		default:;
-	}
+	printf("********************\n");
+	printf("%d %d\n", sum_click, sum_impression);
+	printf("********************\n");
 	return 0;
 }
 
@@ -232,14 +222,42 @@ void DATA::Impressed(int& user1, int& user2)
 	delete [] temp_ad;
 }
 
-void DATA::Profit(int& ad, int& ratio)
-{
+typedef struct temp3 {
+	int User;
+	int Click;
+	int Impression;
+} Pro_output;
 
+int compare3(const void *a, const void *b)
+{
+	int usr1 = ((Pro_output*)a)->User;
+	int usr2 = ((Pro_output*)b)->User;
+	return usr1 - usr2;
+}
+
+void DATA::Profit(int& ad, double& std_ratio)
+{
+	int size = AD[ad].Click.size();
+	Pro_output *temp_usr = new Pro_output[MAX];
+	for (int i = 0 ; i < size ; i++) {
+		temp_usr[AD[ad].User[i]].User = AD[ad].User[i];
+		temp_usr[AD[ad].User[i]].Click += AD[ad].Click[i];
+		temp_usr[AD[ad].User[i]].Impression += AD[ad].Impression[i];
+	}
+	qsort(temp_usr, MAX, sizeof(Pro_output), compare3);
+	printf("********************\n");
+	for (int i = 0 ; i < MAX ; i++) {
+		if (temp_usr[i].Click == 0 || temp_usr[i].Click) continue;
+		int usr_ratio = (double)temp_usr[i].Click/(double)temp_usr[i].Impression;
+		if (usr_ratio >= std_ratio) printf("%d\n", temp_usr[i].User);
+	}
+	printf("********************\n");
+	delete [] temp_usr;
 }
 
 void DATA::Quit()
 {
-	cout << "# leave the program\n" << endl;
+	cout << "# leave the program" << endl;
 }
 
 int main(void)
@@ -247,5 +265,27 @@ int main(void)
 	DATA data;
 	data.Read();
 
+	string input;
+	int ad, depth, pos, query, usr1, usr2, ratio;
+	cin >> input;
+	while(input.compare("quit") != 0) {
+		if (input.compare("get") == 0) {
+			scanf("%d%d%d%d%d", &usr1, &ad, &query, &pos, &depth);
+			data.Get(usr1, ad, query, pos, depth);
+		}
+		if (input.compare("clicked") == 0) {
+			scanf("%d", &usr1);
+			data.Clicked(usr1);
+		}
+		if (input.compare("impressed") == 0) {
+			scanf("%d%d", &usr1, &usr2);
+			data.Impressed(usr1, usr2);
+		}
+		if (input.compare("profit") == 0) {
+			scanf("%d%d", &ad, &ratio);
+		}
+		cin >> input;
+	}
+	data.Quit();
 	return 0;
 }
