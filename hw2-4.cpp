@@ -177,9 +177,59 @@ void DATA::Clicked(int& user)
 	delete [] output;
 }
 
+typedef struct temp2 {
+	int Ad;
+	int usr1;
+	int usr2;
+} Imp_output;
+
+int compare2(const void *a, const void *b)
+{
+	int ad1 = ((Imp_output*)a)->Ad;
+	int ad2 = ((Imp_output*)b)->Ad;
+	return ad1 - ad2;
+}
+
 void DATA::Impressed(int& user1, int& user2)
 {
-
+	int size1 = USER[user1].Click.size();
+	int size2 = USER[user2].Click.size();
+	Imp_output *temp_ad = new Imp_output[(size1 >= size2)? size1 : size2];
+	int tmp = 0;
+	for (int i = 0 ; i < size1 ; i++) {
+		for (int j = 0 ; j < size2 ; j++) {
+			if (USER[user1].Ad[i] == USER[user2].Ad[j] &&
+				USER[user1].Impression[i] != 0 ||
+				USER[user2].Impression[j] != 0) {
+				temp_ad[tmp].Ad = USER[user1].Ad[i];
+				temp_ad[tmp].usr1 = (USER[user1].Impression[i] > 0)? i : -1;
+				temp_ad[tmp].usr2 = (USER[user2].Impression[j] > 0)? j : -1;
+				tmp++;
+			}
+		}
+	}
+	qsort(temp_ad, tmp, sizeof(Imp_output), compare2);
+	printf("********************\n");
+	for (int i = 0 ; i < tmp ; i++) {
+		if (temp_ad[i].Ad != temp_ad[i-1].Ad && i >= 1)
+			printf("%d\n",temp_ad[i].Ad);
+		if (temp_ad[i].usr1) 
+			cout << "\t" << USER[user1].URL[temp_ad[i].usr1];
+			printf(" %d %d %d %d\n",
+			USER[user1].Advertiser[temp_ad[i].usr1],
+			USER[user1].Keyword[temp_ad[i].usr1],
+			USER[user1].Title[temp_ad[i].usr1],
+			USER[user1].Description[temp_ad[i].usr1]);
+		if (temp_ad[i].usr2) 
+			cout << "\t" << USER[user2].URL[temp_ad[i].usr2];
+			printf(" %d %d %d %d\n",
+			USER[user2].Advertiser[temp_ad[i].usr2],
+			USER[user2].Keyword[temp_ad[i].usr2],
+			USER[user2].Title[temp_ad[i].usr2],
+			USER[user2].Description[temp_ad[i].usr2]);	
+	}
+	printf("********************\n");
+	delete [] temp_ad;
 }
 
 void DATA::Profit(int& ad, int& ratio)
