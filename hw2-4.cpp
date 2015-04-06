@@ -5,7 +5,7 @@
 #include <vector> //vector
 #include <string> //string compare
 using namespace std;
-#define MAX 50000000
+#define MAX 150000000
 #define URL_MAX 30
 
 class DATA_USER {
@@ -49,9 +49,9 @@ public:
 
 DATA::DATA()
 {
-	USER = new DATA_USER[40000000];
+	USER = new DATA_USER[MAX];
 	cout << "success1\n";
-	AD = new DATA_AD[25000000];
+	AD = new DATA_AD[MAX];
 	cout << "success2\n";
 }
 
@@ -74,7 +74,6 @@ void DATA::Read()
 		fscanf(ptr, "%d%d%s",&click, &imp, url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
 		if (usr >= 40000000 || ad >= 25000000) {
 			printf("usr = %d, ad = %d\n", usr, ad);
-			return;
 		}
 		string s_url(url);
 		USER[usr].Click.push_back(click);
