@@ -91,7 +91,7 @@ void DATA::Read()
 		AD[ad].Click.push_back(click);
 		AD[ad].Impression.push_back(imp);
 		AD[ad].User.push_back(usr);
-		
+
 		if (usr > max_usr) max_usr = usr;
 	}
 	printf("fucking success~~\t%fsecs\n",(double)clock()/CLOCKS_PER_SEC);
@@ -252,7 +252,8 @@ int main(void)
 	DATA data;
 	data.Read();
 	string input;
-	int ad, depth, pos, query, usr1, usr2, ratio;
+	int ad, depth, pos, query, usr1, usr2;
+	double ratio;
 	cin >> input;
 	while(input.compare("quit") != 0) {
 		if (input.compare("get") == 0) {
