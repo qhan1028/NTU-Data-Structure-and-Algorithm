@@ -5,10 +5,11 @@
 #include <vector> //vector
 #include <string> //string compare
 using namespace std;
-#define MAX 150000000
+#define USER_MAX 50000000
+#define AD_MAX 25000000
 #define URL_MAX 30
 
-class DATA_USER {
+class DATA_USER { //user branch
 public:
 	vector<int> Click;
 	vector<int> Impression;
@@ -23,21 +24,21 @@ public:
 	vector<int> Description;
 };
 
-class DATA_AD {
+class DATA_AD { //ad branch
 public:
 	vector<int> Click;
 	vector<int> Impression;
 	vector<int> User;
 };
 
-class DATA {
+class DATA { //root of all data
 public:
 	DATA();
 	~DATA();
 
 	void Read();
 
-	double Get(int&, int&, int&, int&, int&);
+	void Get(int&, int&, int&, int&, int&);
 	void Clicked(int&);
 	void Impressed(int&, int&);
 	void Profit(int&, double&);
@@ -45,13 +46,14 @@ public:
 
 	DATA_USER *USER;
 	DATA_AD *AD;
+	int max_usr;
 };
 
 DATA::DATA()
 {
-	USER = new DATA_USER[50000000];
+	USER = new DATA_USER[USER_MAX];
 	cout << "success1\n";
-	AD = new DATA_AD[25000000];
+	AD = new DATA_AD[AD_MAX];
 	cout << "success2\n";
 }
 
@@ -66,16 +68,14 @@ void DATA::Read()
 	//char file[1000];
 	//scanf("%s", file);
 	FILE *ptr = fopen("/tmp2/KDDCup2012/track2/kddcup2012track2.txt", "r");
-	cout << "success3\n";
-	int count = 0;
 	int click, imp, ad, adv, depth, pos, query, key, title, des, usr;
 	char url[URL_MAX];
+	max_usr = 0;
+	printf("success3\t\t%fsecs\n", (double)clock()/CLOCKS_PER_SEC);
 	while (!feof(ptr)) {
 		fscanf(ptr, "%d%d%s%d%d%d%d%d%d%d%d%d",&click, &imp, url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
-		if (usr >= 50000000 || ad >= 25000000) {
-			printf("usr = %d, ad = %d, count = %d\n", usr, ad, count);
-		}
 		string s_url(url);
+
 		USER[usr].Click.push_back(click);
 		USER[usr].Impression.push_back(imp);
 		USER[usr].URL.push_back(s_url);
@@ -87,21 +87,18 @@ void DATA::Read()
 		USER[usr].Keyword.push_back(key);
 		USER[usr].Title.push_back(title);
 		USER[usr].Description.push_back(des);
+
 		AD[ad].Click.push_back(click);
 		AD[ad].Impression.push_back(imp);
 		AD[ad].User.push_back(usr);
-		count++;
-		if (count == 100000) printf("successA\t\t%d\t\t%fsecs\n",count, (double)clock()/CLOCKS_PER_SEC);
-		if (count == 1000000) printf("successB\t\t%d\t\t%fsecs\n",count, (double)clock()/CLOCKS_PER_SEC);
-		if (count == 5000000) printf("successC\t\t%d\t\t%fsecs\n",count, (double)clock()/CLOCKS_PER_SEC);
-		if (count == 10000000) printf("successD\t\t%d\t\t%fsecs\n",count, (double)clock()/CLOCKS_PER_SEC);
-		if (count == 100000000) printf("successE\t\t%d\t\t%fsecs\n",count, (double)clock()/CLOCKS_PER_SEC);
+		
+		if (usr > max_usr) max_usr = usr;
 	}
-	printf("fucking success~~\n");
+	printf("fucking success~~\t%fsecs\n",(double)clock()/CLOCKS_PER_SEC);
 	fclose(ptr);
 }
 
-double DATA::Get(int& user, int& ad, int& query, int& pos, int& depth)
+void DATA::Get(int& user, int& ad, int& query, int& pos, int& depth)
 {
 	double sum_click = 0, sum_impression = 0;
 	for (int i = 0 ; i < USER[user].Click.size() ; i++) {
@@ -116,7 +113,6 @@ double DATA::Get(int& user, int& ad, int& query, int& pos, int& depth)
 	printf("********************\n");
 	printf("%d %d\n", sum_click, sum_impression);
 	printf("********************\n");
-	return 0;
 }
 
 typedef struct temp1{
@@ -151,10 +147,10 @@ void DATA::Clicked(int& user)
 			j++;
 		}
 	}
-	int size = j;
-	qsort(output, size, sizeof(Ck_output), compare1);
+	int outputSize = j;
+	qsort(output, outputSize, sizeof(Ck_output), compare1);
 	printf("********************\n");
-	for (int i = 0 ; i < size ; i++) {
+	for (int i = 0 ; i < outputSize ; i++) {
 		printf("%d %d\n", output[i].Ad, output[i].Query);
 	}
 	printf("********************\n");
@@ -232,15 +228,15 @@ int compare3(const void *a, const void *b)
 void DATA::Profit(int& ad, double& std_ratio)
 {
 	int size = AD[ad].Click.size();
-	Pro_output *temp_usr = new Pro_output[MAX];
+	Pro_output *temp_usr = new Pro_output[max_usr];
 	for (int i = 0 ; i < size ; i++) {
 		temp_usr[AD[ad].User[i]].User = AD[ad].User[i];
 		temp_usr[AD[ad].User[i]].Click += AD[ad].Click[i];
 		temp_usr[AD[ad].User[i]].Impression += AD[ad].Impression[i];
 	}
-	qsort(temp_usr, MAX, sizeof(Pro_output), compare3);
+	qsort(temp_usr, max_usr, sizeof(Pro_output), compare3);
 	printf("********************\n");
-	for (int i = 0 ; i < MAX ; i++) {
+	for (int i = 0 ; i < max_usr ; i++) {
 		if (temp_usr[i].Click == 0 || temp_usr[i].Click) continue;
 		int usr_ratio = (double)temp_usr[i].Click/(double)temp_usr[i].Impression;
 		if (usr_ratio >= std_ratio) printf("%d\n", temp_usr[i].User);
@@ -255,7 +251,7 @@ int main(void)
 {
 	DATA data;
 	data.Read();
-	/*string input;
+	string input;
 	int ad, depth, pos, query, usr1, usr2, ratio;
 	cin >> input;
 	while(input.compare("quit") != 0) {
@@ -272,10 +268,11 @@ int main(void)
 			data.Impressed(usr1, usr2);
 		}
 		if (input.compare("profit") == 0) {
-			scanf("%d%d", &ad, &ratio);
+			scanf("%d%lf", &ad, &ratio);
+			data.Profit(ad, ratio);
 		}
 		cin >> input;
-	}*/
+	}
 	data.Quit();
 	return 0;
 }
