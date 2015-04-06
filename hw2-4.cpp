@@ -1,10 +1,10 @@
 #include <iostream> //cin cout
-#include <cstdio> //printf scanf fscanf
+#include <cstdio> //printf scanf fscanf FILE
 #include <cstdlib> //qsort
 #include <vector> //vector
 #include <string> //string compare
 using namespace std;
-#define MAX 150000000
+#define MAX 1000000
 #define URL_MAX 30
 
 class DATA_USER {
@@ -57,7 +57,9 @@ public:
 DATA::DATA()
 {
 	USER = new DATA_USER[MAX];
+	cout << "success1\n";
 	AD = new DATA_AD[MAX];
+	cout << "success2\n";
 }
 
 DATA::~DATA()
@@ -68,10 +70,13 @@ DATA::~DATA()
 
 void DATA::Read()
 {
-	FILE *ptr = fopen("/tmp2/KDDCup2012/track2/kddcup2012track2.txt", "r");
+	char file[1000];
+	FILE *ptr = fopen(file, "r");
+	cout << "success3\n";
 	int click, imp, ad, adv, depth, pos, query, key, title, des, usr;
 	char url[URL_MAX];
 	while (fscanf(ptr, "%d", &click) != EOF) {
+		cout << "success4\n";
 		fscanf(ptr, "%d", &imp);
 		fscanf(ptr, "%s", url);
 		fscanf(ptr, "%d%d%d", &ad, &adv, &depth);
@@ -103,6 +108,7 @@ void DATA::Read()
 		AD[ad].Title.push_back(title);
 		AD[ad].Description.push_back(des);
 		AD[ad].User.push_back(usr);
+		cout << "success5\n";
 	}
 	fclose(ptr);
 }
@@ -255,16 +261,12 @@ void DATA::Profit(int& ad, double& std_ratio)
 	delete [] temp_usr;
 }
 
-void DATA::Quit()
-{
-	cout << "# leave the program" << endl;
-}
+void DATA::Quit(){ cout << "# leave the program" << endl;}
 
 int main(void)
 {
 	DATA data;
 	data.Read();
-
 	string input;
 	int ad, depth, pos, query, usr1, usr2, ratio;
 	cin >> input;
