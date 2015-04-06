@@ -49,9 +49,9 @@ public:
 
 DATA::DATA()
 {
-	USER = new DATA_USER[MAX];
+	USER = new DATA_USER[50000000];
 	cout << "success1\n";
-	AD = new DATA_AD[MAX];
+	AD = new DATA_AD[25000000];
 	cout << "success2\n";
 }
 
@@ -71,9 +71,9 @@ void DATA::Read()
 	int click, imp, ad, adv, depth, pos, query, key, title, des, usr;
 	char url[URL_MAX];
 	while (!feof(ptr)) {
-		fscanf(ptr, "%d%d%s",&click, &imp, url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
-		if (usr >= 40000000 || ad >= 25000000) {
-			printf("usr = %d, ad = %d\n", usr, ad);
+		fscanf(ptr, "%d%d%s%d%d%d%d%d%d%d%d%d",&click, &imp, url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
+		if (usr >= 50000000 || ad >= 25000000) {
+			printf("usr = %d, ad = %d, count = %d\n", usr, ad, count);
 		}
 		string s_url(url);
 		USER[usr].Click.push_back(click);
@@ -91,8 +91,13 @@ void DATA::Read()
 		AD[ad].Impression.push_back(imp);
 		AD[ad].User.push_back(usr);
 		count++;
-		if (count%1000000 == 0) printf("success\t\t%d\t\t%fsecs",count, (double)clock()/CLOCKS_PER_SEC);
+		if (count == 100000) printf("successA\t\t%d\t\t%fsecs\n",count, (double)clock()/CLOCKS_PER_SEC);
+		if (count == 1000000) printf("successB\t\t%d\t\t%fsecs\n",count, (double)clock()/CLOCKS_PER_SEC);
+		if (count == 5000000) printf("successC\t\t%d\t\t%fsecs\n",count, (double)clock()/CLOCKS_PER_SEC);
+		if (count == 10000000) printf("successD\t\t%d\t\t%fsecs\n",count, (double)clock()/CLOCKS_PER_SEC);
+		if (count == 100000000) printf("successE\t\t%d\t\t%fsecs\n",count, (double)clock()/CLOCKS_PER_SEC);
 	}
+	printf("fucking success~~\n");
 	fclose(ptr);
 }
 
