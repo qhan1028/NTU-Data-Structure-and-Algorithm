@@ -1,10 +1,11 @@
 #include <iostream> //cin cout
 #include <cstdio> //printf scanf fscanf FILE
 #include <cstdlib> //qsort
+#include <ctime>
 #include <vector> //vector
 #include <string> //string compare
 using namespace std;
-#define MAX 1000000
+#define MAX 50000000
 #define URL_MAX 30
 
 class DATA_USER {
@@ -26,14 +27,6 @@ class DATA_AD {
 public:
 	vector<int> Click;
 	vector<int> Impression;
-	vector<string> URL;
-	vector<int> Advertiser;
-	vector<int> Depth;
-	vector<int> Position;
-	vector<int> Query;
-	vector<int> Keyword;
-	vector<int> Title;
-	vector<int> Description;
 	vector<int> User;
 };
 
@@ -56,9 +49,9 @@ public:
 
 DATA::DATA()
 {
-	USER = new DATA_USER[MAX];
+	USER = new DATA_USER[40000000];
 	cout << "success1\n";
-	AD = new DATA_AD[MAX];
+	AD = new DATA_AD[25000000];
 	cout << "success2\n";
 }
 
@@ -70,21 +63,20 @@ DATA::~DATA()
 
 void DATA::Read()
 {
-	char file[1000];
-	FILE *ptr = fopen(file, "r");
+	//char file[1000];
+	//scanf("%s", file);
+	FILE *ptr = fopen("/tmp2/KDDCup2012/track2/kddcup2012track2.txt", "r");
 	cout << "success3\n";
+	int count = 0;
 	int click, imp, ad, adv, depth, pos, query, key, title, des, usr;
 	char url[URL_MAX];
-	while (fscanf(ptr, "%d", &click) != EOF) {
-		cout << "success4\n";
-		fscanf(ptr, "%d", &imp);
-		fscanf(ptr, "%s", url);
-		fscanf(ptr, "%d%d%d", &ad, &adv, &depth);
-		fscanf(ptr, "%d%d%d", &pos, &query, &key);
-		fscanf(ptr, "%d%d%d", &title, &des, &usr);
-
+	while (!feof(ptr)) {
+		fscanf(ptr, "%d%d%s",&click, &imp, url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
+		if (usr >= 40000000 || ad >= 25000000) {
+			printf("usr = %d, ad = %d\n", usr, ad);
+			return;
+		}
 		string s_url(url);
-		
 		USER[usr].Click.push_back(click);
 		USER[usr].Impression.push_back(imp);
 		USER[usr].URL.push_back(s_url);
@@ -96,19 +88,11 @@ void DATA::Read()
 		USER[usr].Keyword.push_back(key);
 		USER[usr].Title.push_back(title);
 		USER[usr].Description.push_back(des);
-
 		AD[ad].Click.push_back(click);
 		AD[ad].Impression.push_back(imp);
-		AD[ad].URL.push_back(s_url);
-		AD[ad].Advertiser.push_back(adv);
-		AD[ad].Depth.push_back(depth);
-		AD[ad].Position.push_back(pos);
-		AD[ad].Query.push_back(query);
-		AD[ad].Keyword.push_back(key);
-		AD[ad].Title.push_back(title);
-		AD[ad].Description.push_back(des);
 		AD[ad].User.push_back(usr);
-		cout << "success5\n";
+		count++;
+		if (count%1000000 == 0) printf("success\t\t%d\t\t%fsecs",count, (double)clock()/CLOCKS_PER_SEC);
 	}
 	fclose(ptr);
 }
@@ -267,7 +251,7 @@ int main(void)
 {
 	DATA data;
 	data.Read();
-	string input;
+	/*string input;
 	int ad, depth, pos, query, usr1, usr2, ratio;
 	cin >> input;
 	while(input.compare("quit") != 0) {
@@ -287,7 +271,7 @@ int main(void)
 			scanf("%d%d", &ad, &ratio);
 		}
 		cin >> input;
-	}
+	}*/
 	data.Quit();
 	return 0;
 }
