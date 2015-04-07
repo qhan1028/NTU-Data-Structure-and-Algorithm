@@ -9,13 +9,15 @@ using namespace std;
 #define AD_MAX 25000000
 #define URL_MAX 30
 
-#define TEST7
+#define TEST 100000
 #define READ
 #define INIT
+#define PRINT
 
-// Read OK
-// Get OK
-// Profit OK
+// Read 	OK
+// Get 		OK
+// clicked 	OK
+// Profit 	OK
 
 class DATA_USER { //user branch
 public:
@@ -51,6 +53,9 @@ public:
 	void Impressed(int&, int&);
 	void Profit(int&, double&);
 	void Quit();
+#ifdef PRINT
+	void Print(int&);
+#endif
 
 	DATA_USER *USER;
 	DATA_AD *AD;
@@ -104,9 +109,9 @@ void DATA::Read()
 		AD[ad].User.push_back(usr);
 		if (usr > max_usr) max_usr = usr;
 		if (ad > max_ad) max_ad = ad;	
-#ifdef TEST7
+#ifdef TEST
 		count++;
-		if (count == 1000000) break;
+		if (count == TEST) break;
 #endif
 	}
 #ifdef READ
@@ -256,6 +261,26 @@ void DATA::Profit(int& ad, double& std_ratio)
 	delete [] temp_usr;
 }
 
+#ifdef PRINT
+void DATA::Print(int& user)
+{
+	printf("Click\tImp\tURL\t\t\tAd\t\tAdv\tDepth\tPos\tQuery\t\tKeyword\tTitle\tDes\n");
+	for (int i = 0 ; i < USER[user].Click.size() ; i++) {
+		cout << USER[user].Click[i] << "\t";
+		cout << USER[user].Impression[i] << "\t";
+		cout << USER[user].URL[i] << "\t";
+		cout << USER[user].Ad[i] << "  \t";
+		cout << USER[user].Advertiser[i] << "\t";
+		cout << USER[user].Depth[i] << "\t";
+		cout << USER[user].Position[i] << "\t";
+		cout << USER[user].Query[i] << "       \t";
+		cout << USER[user].Keyword[i] << "\t";
+		cout << USER[user].Title[i] << "\t";
+		cout << USER[user].Description[i] << "\t\n";
+	}
+}
+#endif
+
 void DATA::Quit(){ cout << "# leave the program" << endl;}
 
 int main(void)
@@ -282,6 +307,10 @@ int main(void)
 		if (input.compare("profit") == 0) {
 			scanf("%d%lf", &ad, &ratio);
 			data.Profit(ad, ratio);
+		}
+		if (input.compare("print") == 0) {
+			scanf("%d", &usr1);
+			data.Print(usr1);
 		}
 		cin >> input;
 	}
