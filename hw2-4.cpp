@@ -9,10 +9,10 @@ using namespace std;
 #define AD_MAX 25000000
 #define URL_MAX 30
 
-#define TEST 100000
 #define READ
 #define INIT
 #define PRINT
+#define TIME
 
 // Read 	OK
 // Get 		OK
@@ -68,7 +68,7 @@ DATA::DATA()
 	USER = new DATA_USER[USER_MAX];
 	AD = new DATA_AD[AD_MAX];
 #ifdef INIT
-	printf("initialization success\t%fsecs\n", (double)clock()/CLOCKS_PER_SEC);
+	printf("initialization success\t%f secs\n", (double)clock()/CLOCKS_PER_SEC);
 #endif
 }
 
@@ -87,7 +87,7 @@ void DATA::Read()
 	char url[URL_MAX];
 	max_usr = max_ad = 0;
 #ifdef READ
-	printf("file open success\t%fsecs\n", (double)clock()/CLOCKS_PER_SEC);
+	printf("file open success\t%f secs\n", (double)clock()/CLOCKS_PER_SEC);
 #endif
 	while (!feof(ptr)) {
 		fscanf(ptr, "%d%d%s%d%d%d%d%d%d%d%d%d",&click, &imp, &url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
@@ -115,15 +115,14 @@ void DATA::Read()
 #endif
 	}
 #ifdef READ
-	printf("read success\t%fsecs\n",(double)clock()/CLOCKS_PER_SEC);
-	printf("biggest usr = %d\n", max_usr);
-	printf("biggest ad = %d\n", max_ad);
+	printf("read success\t%f secs\n",(double)clock()/CLOCKS_PER_SEC);
 #endif
 	fclose(ptr);
 }
 
 void DATA::Get(int& user, int& ad, int& query, int& pos, int& depth)
 {
+	int t1 = clock();
 	int sum_click = 0, sum_impression = 0;
 	for (int i = 0 ; i < USER[user].Ad.size() ; i++) {
 		if (USER[user].Ad[i] == ad &&
@@ -136,6 +135,11 @@ void DATA::Get(int& user, int& ad, int& query, int& pos, int& depth)
 	}
 	printf("********************\n");
 	printf("%d %d\n", sum_click, sum_impression);
+#ifdef TIME
+	int t2 = clock();
+	double t = (double)(t2 - t1)/CLOCKS_PER_SEC;
+	printf("%f secs\n", t);
+#endif
 	printf("********************\n");
 }
 
@@ -161,6 +165,7 @@ int compare1(const void *a, const void *b)
 
 void DATA::Clicked(int& user)
 {
+	int t1 = clock();
 	int dataSize = USER[user].Click.size();
 	int j = 0;
 	Ck_output *output = new Ck_output[dataSize];
@@ -177,6 +182,11 @@ void DATA::Clicked(int& user)
 	for (int i = 0 ; i < outputSize ; i++) {
 		printf("%d %d\n", output[i].Ad, output[i].Query);
 	}
+#ifdef TIME
+	int t2 = clock();
+	double t = (double)(t2 - t1)/CLOCKS_PER_SEC;
+	printf("total : %d\t%f secs\n", outputSize, t);
+#endif
 	printf("********************\n");
 	delete [] output;
 }
@@ -244,6 +254,7 @@ typedef struct temp3 {
 
 void DATA::Profit(int& ad, double& std_ratio)
 {
+	int t1 = clock();
 	int size = AD[ad].Click.size();
 	Pro_output *temp_usr = new Pro_output[max_usr];
 	for (int i = 0 ; i < size ; i++) {
@@ -257,6 +268,11 @@ void DATA::Profit(int& ad, double& std_ratio)
 		usr_ratio = (double)temp_usr[i].Click/(double)temp_usr[i].Impression;
 		if (usr_ratio >= std_ratio) cout << i << endl;
 	}
+#ifdef TIME
+	int t2 = clock();
+	double t = (double)(t2 - t1)/CLOCKS_PER_SEC;
+	printf("%f secs\n", t);
+#endif
 	printf("********************\n");
 	delete [] temp_usr;
 }
@@ -264,6 +280,11 @@ void DATA::Profit(int& ad, double& std_ratio)
 #ifdef PRINT
 void DATA::Print(int& user)
 {
+	if (user < 0) {
+		printf("biggest usr = %d\n biggest ad = %d\n", max_usr, max_ad);
+		return;
+	}
+	int t1 = clock();
 	printf("Click\tImp\tURL\t\t\tAd\t\tAdv\tDepth\tPos\tQuery\t\tKeyword\tTitle\tDes\n");
 	for (int i = 0 ; i < USER[user].Click.size() ; i++) {
 		cout << USER[user].Click[i] << "\t";
@@ -278,6 +299,9 @@ void DATA::Print(int& user)
 		cout << USER[user].Title[i] << "\t";
 		cout << USER[user].Description[i] << "\t\n";
 	}
+	int t2 = clock();
+	double t = (double)(t2 - t1)/CLOCKS_PER_SEC;
+	printf("total : %d\t%f secs\n", USER[user].Click.size(), t);
 }
 #endif
 
