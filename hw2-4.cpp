@@ -52,9 +52,8 @@ public:
 DATA::DATA()
 {
 	USER = new DATA_USER[USER_MAX];
-	cout << "success1\n";
 	AD = new DATA_AD[AD_MAX];
-	cout << "success2\n";
+	printf("initialization success\t%fsecs\n", (double)clock()/CLOCKS_PER_SEC);
 }
 
 DATA::~DATA()
@@ -71,11 +70,10 @@ void DATA::Read()
 	int click, imp, ad, adv, depth, pos, query, key, title, des, usr;
 	char url[URL_MAX];
 	max_usr = 0;
-	printf("success3\t\t%fsecs\n", (double)clock()/CLOCKS_PER_SEC);
+	printf("file open success\t%fsecs\n", (double)clock()/CLOCKS_PER_SEC);
 	while (!feof(ptr)) {
 		fscanf(ptr, "%d%d%s%d%d%d%d%d%d%d%d%d",&click, &imp, url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
 		string s_url(url);
-
 		USER[usr].Click.push_back(click);
 		USER[usr].Impression.push_back(imp);
 		USER[usr].URL.push_back(s_url);
@@ -91,10 +89,9 @@ void DATA::Read()
 		AD[ad].Click.push_back(click);
 		AD[ad].Impression.push_back(imp);
 		AD[ad].User.push_back(usr);
-
 		if (usr > max_usr) max_usr = usr;
 	}
-	printf("fucking success~~\t%fsecs\n",(double)clock()/CLOCKS_PER_SEC);
+	printf("read success\t%fsecs\n",(double)clock()/CLOCKS_PER_SEC);
 	fclose(ptr);
 }
 
@@ -237,7 +234,7 @@ void DATA::Profit(int& ad, double& std_ratio)
 	qsort(temp_usr, max_usr, sizeof(Pro_output), compare3);
 	printf("********************\n");
 	for (int i = 0 ; i < max_usr ; i++) {
-		if (temp_usr[i].Click == 0 || temp_usr[i].Click) continue;
+		if (temp_usr[i].Click == 0 || temp_usr[i].Impression == 0) continue;
 		int usr_ratio = (double)temp_usr[i].Click/(double)temp_usr[i].Impression;
 		if (usr_ratio >= std_ratio) printf("%d\n", temp_usr[i].User);
 	}
