@@ -5,9 +5,9 @@
 #include <vector> //vector
 #include <string> //string compare
 using namespace std;
-#define USER_MAX 25000000
-#define AD_MAX 25000000
-#define URL_MAX 30
+#define USER_MAX 24000000
+#define AD_MAX 24000000
+#define URL_MAX 22
 
 #define READ
 #define INIT
@@ -47,15 +47,14 @@ public:
 	~DATA();
 
 	void Read();
-
 	void Get(int&, int&, int&, int&, int&);
 	void Clicked(int&);
 	void Impressed(int&, int&);
 	void Profit(int&, double&);
 	void Quit();
-#ifdef PRINT
+	#ifdef PRINT
 	void Print(int&);
-#endif
+	#endif
 
 	DATA_USER *USER;
 	DATA_AD *AD;
@@ -67,9 +66,9 @@ DATA::DATA()
 {
 	USER = new DATA_USER[USER_MAX];
 	AD = new DATA_AD[AD_MAX];
-#ifdef INIT
-	printf("initialization success\t%f secs\n", (double)clock()/CLOCKS_PER_SEC);
-#endif
+	#ifdef INIT
+	printf("initialization success\tat %f secs\n", (double)clock()/CLOCKS_PER_SEC);
+	#endif
 }
 
 DATA::~DATA()
@@ -86,11 +85,12 @@ void DATA::Read()
 	int click, imp, ad, adv, depth, pos, query, key, title, des, usr, count = 0;
 	char url[URL_MAX];
 	max_usr = max_ad = 0;
-#ifdef READ
-	printf("file open success\t%f secs\n", (double)clock()/CLOCKS_PER_SEC);
-#endif
+	#ifdef READ
+	printf("file open success\tat %f secs\n", (double)clock()/CLOCKS_PER_SEC);
+	#endif
 	while (!feof(ptr)) {
 		fscanf(ptr, "%d%d%s%d%d%d%d%d%d%d%d%d",&click, &imp, &url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
+
 		string s_url(url);
 		USER[usr].Click.push_back(click);
 		USER[usr].Impression.push_back(imp);
@@ -109,14 +109,14 @@ void DATA::Read()
 		AD[ad].User.push_back(usr);
 		if (usr > max_usr) max_usr = usr;
 		if (ad > max_ad) max_ad = ad;	
-#ifdef TEST
+	#ifdef TEST
 		count++;
 		if (count == TEST) break;
-#endif
+	#endif
 	}
-#ifdef READ
-	printf("read success\t%f secs\n",(double)clock()/CLOCKS_PER_SEC);
-#endif
+	#ifdef READ
+	printf("read success\t\tat %f secs\n",(double)clock()/CLOCKS_PER_SEC);
+	#endif
 	fclose(ptr);
 }
 
@@ -135,11 +135,10 @@ void DATA::Get(int& user, int& ad, int& query, int& pos, int& depth)
 	}
 	printf("********************\n");
 	printf("%d %d\n", sum_click, sum_impression);
-#ifdef TIME
+	#ifdef TIME
 	int t2 = clock();
-	double t = (double)(t2 - t1)/CLOCKS_PER_SEC;
-	printf("%f secs\n", t);
-#endif
+	printf("spend %f secs\n", (double)(t2 - t1)/CLOCKS_PER_SEC);
+	#endif
 	printf("********************\n");
 }
 
@@ -148,19 +147,13 @@ typedef struct temp1{
 	int Query;
 } Ck_output;
 
-int compare1(const void *a, const void *b)
+int Ck_compare(const void *a, const void *b)
 {
 	int ad1 = ((Ck_output*)a)->Ad;
 	int ad2 = ((Ck_output*)b)->Ad;
 	int query1 = ((Ck_output*)a)->Query;
 	int query2 = ((Ck_output*)b)->Query;
-	if ( ad1 > ad2 ) return 1;
-	if ( ad1 < ad2 ) return -1;
-	if ( ad1 == ad2 ) {
-		if ( query1 > query2 ) return 1;
-		if ( query1 < query2 ) return -1;
-		if ( query1 == query2 ) return 0;
-	}
+	return ( (ad1==ad2)?(query1==query2)? 0:(query1-query2):(ad1-ad2) );
 }
 
 void DATA::Clicked(int& user)
@@ -176,76 +169,100 @@ void DATA::Clicked(int& user)
 			j++;
 		}
 	}
-	int outputSize = j;
-	qsort(output, outputSize, sizeof(Ck_output), compare1);
+	int outputSize = j, count = 0;
+	qsort(output, outputSize, sizeof(Ck_output), Ck_compare);
 	printf("********************\n");
 	for (int i = 0 ; i < outputSize ; i++) {
+		if (output[i].Ad != output[i-1].Ad || 
+			output[i].Query != output[i].Query && i > 0) {
 		printf("%d %d\n", output[i].Ad, output[i].Query);
+		count++;
+		}
 	}
-#ifdef TIME
+	#ifdef TIME
 	int t2 = clock();
-	double t = (double)(t2 - t1)/CLOCKS_PER_SEC;
-	printf("total : %d\t%f secs\n", outputSize, t);
-#endif
+	printf("total : %d\tspend %f secs\n", count, (double)(t2 - t1)/CLOCKS_PER_SEC);
+	#endif
 	printf("********************\n");
 	delete [] output;
 }
 
 typedef struct temp2 {
-	int Ad;
-	int usr;
-	int usr_index;
+	int Ad; int usr; int index; string url;
+	int adv; int key; int title; int des;
 } Imp_output;
 
-int compare2(const void *a, const void *b)
+int Imp_compare(const void *a, const void *b)
 {
 	int ad1 = ((Imp_output*)a)->Ad;
 	int ad2 = ((Imp_output*)b)->Ad;
-	return ad1 - ad2;
+	string url1 = ((Imp_output*)a)->url;
+	string url2 = ((Imp_output*)b)->url;
+	int adv1 = ((Imp_output*)a)->adv;
+	int adv2 = ((Imp_output*)b)->adv;
+	int key1 = ((Imp_output*)a)->key;
+	int key2 = ((Imp_output*)b)->key;
+	int tle1 = ((Imp_output*)a)->title;
+	int tle2 = ((Imp_output*)b)->title;
+	int des1 = ((Imp_output*)a)->des;
+	int des2 = ((Imp_output*)b)->des;
+	return ( (ad1==ad2)?(url1.compare(url2)==0)?(adv1==adv2)?(key1==key2)?(tle1==tle2)?(des1==des2)? 
+		0:(des1-des2):(tle1-tle2):(key1-key2):(adv1-adv2):(url1.compare(url2)):(ad1-ad2) );
+}
+
+void Imp_assign(Imp_output *out, int tmp, DATA_USER *in, int user, int index)
+{
+	out[tmp].Ad = in[user].Ad[index];
+	out[tmp].usr = user;
+	out[tmp].index = index;
+	out[tmp].url = in[user].URL[index];
+	out[tmp].adv = in[user].Advertiser[index];
+	out[tmp].key = in[user].Keyword[index];
+	out[tmp].title = in[user].Title[index];
+	out[tmp].title = in[user].Description[index];
+}
+
+int Imp_isSame(Imp_output *tmp, int a, int b)
+{
+	return (tmp[a].Ad==tmp[b].Ad && tmp[a].adv==tmp[b].adv && tmp[a].key==tmp[b].key &&
+		tmp[a].title==tmp[b].title && tmp[a].des==tmp[b].des && tmp[a].url.compare(tmp[b].url));
 }
 
 void DATA::Impressed(int& user1, int& user2)
 {
-
-}
-/*
-void DATA::Impressed(int& user1, int& user2)
-{
+	int t1 = clock();
 	int size1 = USER[user1].Click.size();
 	int size2 = USER[user2].Click.size();
-	Imp_output *temp_ad = new Imp_output[size1+size2];
+	Imp_output *output = new Imp_output[size1+size2];
 	int tmp = 0;
 	for (int i = 0 ; i < size1 ; i++) {
 		for (int j = 0 ; j < size2 ; j++) {
 			if (USER[user1].Ad[i] == USER[user2].Ad[j]) {
-				temp_ad[tmp].Ad = USER[user1].Ad[i];
-				temp_ad[tmp].usr = user1;
-				temp_ad[tmp].usr_index = i;
+				Imp_assign(output, tmp, USER, user1, i);
 				tmp++;
-				temp_ad[tmp].Ad = USER[user2].Ad[j];
-				temp_ad[tmp].usr = user2;
-				temp_ad[tmp].usr_index = j;
+				Imp_assign(output, tmp, USER, user2, j);
 				tmp++;
 			}
 		}
 	}
-	qsort(temp_ad, tmp, sizeof(Imp_output), compare2);
+	qsort(output, tmp, sizeof(Imp_output), Imp_compare);
 	printf("********************\n");
-	printf("%d\n", temp_ad[0].Ad);
+	printf("%d\n", output[0].Ad);
 	for (int i = 0 ; i < tmp ; i++) {
-		if (temp_ad[i].Ad != temp_ad[i-1].Ad && i > 0) {
-			printf("%d\n", temp_ad[i].Ad);
+		if (output[i].Ad != output[i-1].Ad && i > 0) printf("%d\n", output[i].Ad);
+		if (!Imp_isSame(output, i, i-1) && i > 0) {
+			cout << "\t" << output[i].url;
+			printf(" %d %d %d %d\n", output[i].adv, output[i].key, output[i].title, output[i].des);
 		}
-		cout << "\t" << USER[temp_ad[i].usr].URL[temp_ad[i].usr_index];
-		cout << " " << USER[temp_ad[i].usr].Advertiser[temp_ad[i].usr_index];
-		cout << " " << USER[temp_ad[i].usr].Keyword[temp_ad[i].usr_index];
-		cout << " " << USER[temp_ad[i].usr].Title[temp_ad[i].usr_index];
-		cout << " " << USER[temp_ad[i].usr].Description[temp_ad[i].usr_index] << endl;
 	}
+	#ifdef TIME
+	int t2 = clock();
+	printf("%f secs\n", (double)(t2-t1)/CLOCKS_PER_SEC);
+	#endif
 	printf("********************\n");
-	delete [] temp_ad;
+	delete [] output;
 }
-*/
+
 
 typedef struct temp3 {
 	int Click;
@@ -268,11 +285,10 @@ void DATA::Profit(int& ad, double& std_ratio)
 		usr_ratio = (double)temp_usr[i].Click/(double)temp_usr[i].Impression;
 		if (usr_ratio >= std_ratio) cout << i << endl;
 	}
-#ifdef TIME
+	#ifdef TIME
 	int t2 = clock();
-	double t = (double)(t2 - t1)/CLOCKS_PER_SEC;
-	printf("%f secs\n", t);
-#endif
+	printf("spend %f secs\n", (double)(t2 - t1)/CLOCKS_PER_SEC);
+	#endif
 	printf("********************\n");
 	delete [] temp_usr;
 }
@@ -300,8 +316,7 @@ void DATA::Print(int& user)
 		cout << USER[user].Description[i] << "\t\n";
 	}
 	int t2 = clock();
-	double t = (double)(t2 - t1)/CLOCKS_PER_SEC;
-	printf("total : %d\t%f secs\n", USER[user].Click.size(), t);
+	printf("total : %d\tspend %f secs\n", USER[user].Click.size(), (double)(t2 - t1)/CLOCKS_PER_SEC);
 }
 #endif
 
