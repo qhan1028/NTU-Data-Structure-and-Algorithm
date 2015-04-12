@@ -7,7 +7,7 @@
 using namespace std;
 #define USER_MAX 24000000
 #define AD_MAX 24000000
-#define URL_MAX 25
+#define URL_MAX 22
 
 #define READ
 #define INIT
@@ -79,6 +79,8 @@ DATA::~DATA()
 
 void DATA::Read()
 {
+	//char file[1000];
+	//scanf("%s", file);
 	FILE *ptr = fopen("/tmp2/KDDCup2012/track2/kddcup2012track2.txt", "r");
 	int click, imp, ad, adv, depth, pos, query, key, title, des, usr, count = 0;
 	char url[URL_MAX];
@@ -208,20 +210,22 @@ int Imp_compare(const void *a, const void *b)
 		0:(des1-des2):(tle1-tle2):(key1-key2):(adv1-adv2):(url1.compare(url2)):(ad1-ad2) );
 }
 
-void Imp_assign(Imp_output out, DATA_USER *in, int user, int index)
+void Imp_assign(Imp_output *out, int tmp, DATA_USER *in, int user, int index)
 {
-	out.Ad = in[user].Ad[index];
-	out.url = in[user].URL[index];
-	out.adv = in[user].Advertiser[index];
-	out.key = in[user].Keyword[index];
-	out.title = in[user].Title[index];
-	out.des = in[user].Description[index];
+	out[tmp].Ad = in[user].Ad[index];
+	out[tmp].usr = user;
+	out[tmp].index = index;
+	out[tmp].url = in[user].URL[index];
+	out[tmp].adv = in[user].Advertiser[index];
+	out[tmp].key = in[user].Keyword[index];
+	out[tmp].title = in[user].Title[index];
+	out[tmp].title = in[user].Description[index];
 }
 
-int Imp_isSame(Imp_output *tmp, int n)
+int Imp_isSame(Imp_output *tmp, int a, int b)
 {
-	return (tmp[n].Ad==tmp[n-1].Ad && tmp[n].adv==tmp[n-1].adv && tmp[n].key==tmp[n-1].key &&
-		tmp[n].title==tmp[n-1].title && tmp[n].des==tmp[n-1].des && tmp[n].url.compare(tmp[n-1].url)==0);
+	return (tmp[a].Ad==tmp[b].Ad && tmp[a].adv==tmp[b].adv && tmp[a].key==tmp[b].key &&
+		tmp[a].title==tmp[b].title && tmp[a].des==tmp[b].des && tmp[a].url.compare(tmp[b].url));
 }
 
 void DATA::Impressed(int& user1, int& user2)
@@ -229,26 +233,24 @@ void DATA::Impressed(int& user1, int& user2)
 	int t1 = clock();
 	int size1 = USER[user1].Click.size();
 	int size2 = USER[user2].Click.size();
-	Imp_output tmp_output;
-	vector<Imp_output> output;
+	Imp_output *output = new Imp_output[USER_MAX];
+	int tmp = 0;
 	for (int i = 0 ; i < size1 ; i++) {
 		for (int j = 0 ; j < size2 ; j++) {
 			if (USER[user1].Ad[i] == USER[user2].Ad[j]) {
-				Imp_assign(tmp_output, USER, user1, i);
-				output.push_back(tmp_output);
-				Imp_assign(tmp_output, USER, user2, j);
-				output.push_back(tmp_output);
+				Imp_assign(output, tmp, USER, user1, i);
+				tmp++;
+				Imp_assign(output, tmp, USER, user2, j);
+				tmp++;
 			}
 		}
 	}
-	qsort(&output[0], output.size(), sizeof(Imp_output), Imp_compare);
+	qsort(output, tmp, sizeof(Imp_output), Imp_compare);
 	printf("********************\n");
 	printf("%d\n", output[0].Ad);
-	cout << "\t" << output[0].url;
-	printf(" %d %d %d %d\n", output[0].adv, output[0].key, output[0].title, output[0].des);
-	for (int i = 1 ; i < output.size() ; i++) {
-		if (output[i].Ad != output[i-1].Ad) printf("%d\n", output[i].Ad);
-		if (!Imp_isSame(&output[0], i)) {
+	for (int i = 0 ; i < tmp ; i++) {
+		if (output[i].Ad != output[i-1].Ad && i > 0) printf("%d\n", output[i].Ad);
+		if (!Imp_isSame(output, i, i-1) && i > 0) {
 			cout << "\t" << output[i].url;
 			printf(" %d %d %d %d\n", output[i].adv, output[i].key, output[i].title, output[i].des);
 		}
@@ -258,7 +260,9 @@ void DATA::Impressed(int& user1, int& user2)
 	printf("%f secs\n", (double)(t2-t1)/CLOCKS_PER_SEC);
 	#endif
 	printf("********************\n");
+	delete [] output;
 }
+
 
 typedef struct temp3 {
 	int Click;
