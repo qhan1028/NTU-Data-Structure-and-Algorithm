@@ -14,7 +14,7 @@ using namespace std;
 #define READ
 #define READ_PROCESS
 #define INIT
-#define PRINT
+//#define PRINT
 #define TIME
 #define IMPRESSED
 
@@ -22,26 +22,35 @@ using namespace std;
 // Get 		OK
 // clicked 	OK
 // Profit 	OK
+// impressed OK
 
 class DATA_USER { //user branch
 public:
 	vector<int> Click;
 	vector<int> Impression;
-	vector<string> URL;
 	vector<int> Ad;
-	vector<int> Advertiser;
 	vector<int> Depth;
 	vector<int> Position;
 	vector<int> Query;
+	#ifdef PRINT
+	vector<string> URL;
+	vector<int> Advertiser;
 	vector<int> Keyword;
 	vector<int> Title;
 	vector<int> Description;
+	#endif
 };
 
 class DATA_AD { //ad branch
 public:
 	vector<int> Click;
 	vector<int> Impression;
+	vector<string> URL;
+	vector<int> Ad;
+	vector<int> Advertiser;
+	vector<int> Keyword;
+	vector<int> Title;
+	vector<int> Description;
 	vector<int> User;
 };
 
@@ -101,20 +110,27 @@ void DATA::Read()
 		fscanf(ptr, "%d%d%s%d%d%d%d%d%d%d%d%d",&click, &imp, &url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
 
 		string s_url(url);
-		USER[usr].Click.push_back(click);
-		USER[usr].Impression.push_back(imp);
+		USER[usr].Click.push_back(click);//
+		USER[usr].Impression.push_back(imp);//
+		USER[usr].Ad.push_back(ad);//
+		USER[usr].Depth.push_back(depth);//
+		USER[usr].Position.push_back(pos);//
+		USER[usr].Query.push_back(query);//
+		#ifdef PRINT
 		USER[usr].URL.push_back(s_url);
-		USER[usr].Ad.push_back(ad);
 		USER[usr].Advertiser.push_back(adv);
-		USER[usr].Depth.push_back(depth);
-		USER[usr].Position.push_back(pos);
-		USER[usr].Query.push_back(query);
 		USER[usr].Keyword.push_back(key);
 		USER[usr].Title.push_back(title);
 		USER[usr].Description.push_back(des);
-
+		#endif
 		AD[ad].Click.push_back(click);
 		AD[ad].Impression.push_back(imp);
+		AD[ad].URL.push_back(s_url);
+		AD[ad].Ad.push_back(ad);
+		AD[ad].Advertiser.push_back(adv);
+		AD[ad].Keyword.push_back(key);
+		AD[ad].Title.push_back(title);
+		AD[ad].Description.push_back(des);
 		AD[ad].User.push_back(usr);
 		if (usr > max_usr) max_usr = usr;
 		if (ad > max_ad) max_ad = ad;
@@ -196,7 +212,7 @@ void DATA::Clicked(int& user)
 		}
 	}
 	printf("********************\n");
-	printf("total : %d", count);
+	printf("total : %d\t", count);
 	delete [] output;
 }
 
@@ -223,16 +239,16 @@ int Imp_compare(const void *a, const void *b)
 		0:(des1-des2):(tle1-tle2):(key1-key2):(adv1-adv2):(url1.compare(url2)):(ad1-ad2) );
 }
 
-void Imp_assign(Imp_output *out, int tmp, DATA_USER *in, int user, int index)
+void Imp_assign(Imp_output *out, int tmp, DATA_AD *in, int ad, int index)
 {
-	out[tmp].Ad = in[user].Ad[index];
-	out[tmp].usr = user;
+	out[tmp].Ad = in[ad].Ad[index];
+	out[tmp].usr = ad;
 	out[tmp].index = index;
-	out[tmp].url = in[user].URL[index];
-	out[tmp].adv = in[user].Advertiser[index];
-	out[tmp].key = in[user].Keyword[index];
-	out[tmp].title = in[user].Title[index];
-	out[tmp].des = in[user].Description[index];
+	out[tmp].url = in[ad].URL[index];
+	out[tmp].adv = in[ad].Advertiser[index];
+	out[tmp].key = in[ad].Keyword[index];
+	out[tmp].title = in[ad].Title[index];
+	out[tmp].des = in[ad].Description[index];
 }
 
 int Imp_isSame(Imp_output *tmp, int a, int b)
@@ -243,19 +259,27 @@ int Imp_isSame(Imp_output *tmp, int a, int b)
 
 void DATA::Impressed(int& user1, int& user2)
 {
-	int size1 = USER[user1].Click.size();
-	int size2 = USER[user2].Click.size();
-	Imp_output *output = new Imp_output[MAX];
+	Imp_output *output = new Imp_output[160000];
 	#ifdef IMPRESSED
 	cout << "new struct init success\n";
 	#endif
-	int tmp = 0;
-	for (int i = 0 ; i < size1 ; i++) {
-		for (int j = 0 ; j < size2 ; j++) {
-			if (USER[user1].Ad[i] == USER[user2].Ad[j]) {
-				Imp_assign(output, tmp, USER, user1, i);
-				tmp++;
-				Imp_assign(output, tmp, USER, user2, j);
+	int found1, found2, tmp = 0;
+	for (int i = min_ad ; i < max_ad ; i++) {
+		found1 = found2 = 0;
+		vector<int> index;
+		for (int j = 0 ; j < AD[i].Click.size() ; j++) {
+			if (AD[i].User[j] == user1) {
+				found1 = 1;
+				index.push_back(j);
+			}
+			if (AD[i].User[j] == user2) {
+				found2 = 1;
+				index.push_back(j);
+			}
+		}
+		if (found1 && found2) {
+			for (int k = 0 ; k < index.size() ; k++) {
+				Imp_assign(output, tmp, AD, i, index[k]);
 				tmp++;
 			}
 		}
@@ -267,18 +291,23 @@ void DATA::Impressed(int& user1, int& user2)
 	#ifdef IMPRESSED
 	cout << "qsort success\n";
 	#endif
+	int count = 0;
 	printf("********************\n");
-	printf("%d\n", output[0].Ad);
-	cout << "\t" << output[0].url;
-	printf(" %d %d %d %d\n", output[0].adv, output[0].key, output[0].title, output[0].des);
-	for (int i = 1 ; i < tmp ; i++) {
-		if (output[i].Ad != output[i-1].Ad) printf("%d\n", output[i].Ad);
-		if (!Imp_isSame(output, i, i-1)) {
-			cout << "\t" << output[i].url;
-			printf(" %d %d %d %d\n", output[i].adv, output[i].key, output[i].title, output[i].des);
+	if (tmp > 0) {
+		printf("%d\n", output[0].Ad);
+		cout << "\t" << output[0].url;
+		printf(" %d %d %d %d\n", output[0].adv, output[0].key, output[0].title, output[0].des);
+		for (int i = 1 ; i < tmp ; i++) {
+			if (output[i].Ad != output[i-1].Ad) printf("%d\n", output[i].Ad);
+			if (!Imp_isSame(output, i, i-1)) {
+				cout << "\t" << output[i].url;
+				printf(" %d %d %d %d\n", output[i].adv, output[i].key, output[i].title, output[i].des);
+				count++;
+			}
 		}
 	}
 	printf("********************\n");
+	printf("total : %d\t", count);
 	delete [] output;
 }
 
@@ -290,7 +319,7 @@ typedef struct temp3 {
 
 void DATA::Profit(int& ad, double& std_ratio)
 {
-	int size = AD[ad].Click.size();
+	int size = AD[ad].Click.size(), count = 0;
 	Pro_output *temp_usr = new Pro_output[max_usr];
 	for (int i = 0 ; i < size ; i++) {
 		temp_usr[AD[ad].User[i]].Click += AD[ad].Click[i];
@@ -301,9 +330,13 @@ void DATA::Profit(int& ad, double& std_ratio)
 	for (int i = 0 ; i < max_usr ; i++) {
 		if (temp_usr[i].Click == 0 || temp_usr[i].Impression == 0) continue;
 		usr_ratio = (double)temp_usr[i].Click/(double)temp_usr[i].Impression;
-		if (usr_ratio >= std_ratio) cout << i << endl;
+		if (usr_ratio >= std_ratio) {
+			cout << i << endl;
+			count++;
+		}
 	}
 	printf("********************\n");
+	printf("total : %d\t", count);
 	delete [] temp_usr;
 }
 
@@ -360,10 +393,12 @@ int main(void)
 			scanf("%d%lf", &ad, &ratio);
 			data.Profit(ad, ratio);
 		}
+		#ifdef PRINT
 		if (input.compare("print") == 0) {
 			scanf("%d", &usr1);
 			data.Print(usr1);
 		}
+		#endif
 		#ifdef TIME
 		int t2 = clock();
 		printf("spend %f secs\n", (double)(t2 - t1)/CLOCKS_PER_SEC);
