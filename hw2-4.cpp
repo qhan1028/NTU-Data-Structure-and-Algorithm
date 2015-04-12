@@ -10,11 +10,12 @@ using namespace std;
 #define AD_MAX 24000000
 #define MAX 150000000
 #define URL_MAX 23
+#define IMPRESSED_MAX 80000000
 
 #define READ
 #define READ_PROCESS
 #define INIT
-//#define PRINT
+#define PRINT
 #define TIME
 #define IMPRESSED
 
@@ -259,7 +260,7 @@ int Imp_isSame(Imp_output *tmp, int a, int b)
 
 void DATA::Impressed(int& user1, int& user2)
 {
-	Imp_output *output = new Imp_output[160000];
+	Imp_output *output = new Imp_output[IMPRESSED_MAX];
 	#ifdef IMPRESSED
 	cout << "new struct init success\n";
 	#endif
@@ -307,7 +308,7 @@ void DATA::Impressed(int& user1, int& user2)
 		}
 	}
 	printf("********************\n");
-	printf("total : %d\t", count);
+	printf("total : %d\ttemp total : %d\t", count, tmp);
 	delete [] output;
 }
 
