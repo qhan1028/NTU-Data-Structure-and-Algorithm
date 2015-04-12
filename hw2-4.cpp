@@ -16,6 +16,7 @@ using namespace std;
 #define INIT
 #define PRINT
 #define TIME
+#define IMPRESSED
 
 // Read 	OK
 // Get 		OK
@@ -63,12 +64,13 @@ public:
 	DATA_AD *AD;
 	int max_usr;
 	int max_ad;
+	int min_ad;
 };
 
 DATA::DATA()
 {
 	#ifdef INIT
-	cout << "initializing...\n" << endl;
+	cout << "initializing..." << endl;
 	#endif
 	USER = new DATA_USER[USER_MAX];
 	AD = new DATA_AD[AD_MAX];
@@ -91,6 +93,7 @@ void DATA::Read()
 	int click, imp, ad, adv, depth, pos, query, key, title, des, usr, count = 0;
 	char url[URL_MAX];
 	max_usr = max_ad = 0;
+	min_ad = AD_MAX;
 	#ifdef READ
 	printf("file open success\tat %f secs\nreading...\n", (double)clock()/CLOCKS_PER_SEC);
 	#endif
@@ -115,11 +118,12 @@ void DATA::Read()
 		AD[ad].User.push_back(usr);
 		if (usr > max_usr) max_usr = usr;
 		if (ad > max_ad) max_ad = ad;
+		if (ad < min_ad) min_ad = ad;
 	#ifdef READ_PROCESS
 		count++;
 		if (count==37500000) printf("25%%\n");
-		if (count==75000000) printf("\b\b\b\b50%%\n");
-		if (count==112500000) printf("\b\b\b\b75%%\n");
+		if (count==75000000) printf("50%%\n");
+		if (count==112500000) printf("75%%\n");
 	#endif
 	#ifdef TEST
 		count++;
@@ -127,7 +131,7 @@ void DATA::Read()
 	#endif
 	}
 	#ifdef READ
-	printf("\b\b\b\b100%%\n");
+	printf("100%%\n");
 	printf("read success\t\tat %f secs\n",(double)clock()/CLOCKS_PER_SEC);
 	#endif
 	fclose(ptr);
@@ -180,15 +184,19 @@ void DATA::Clicked(int& user)
 	int outputSize = j, count = 0;
 	qsort(output, outputSize, sizeof(Ck_output), Ck_compare);
 	printf("********************\n");
-	printf("%d %d\n", output[0].Ad, output[0].Query);
-	for (int i = 1 ; i < outputSize ; i++) {
-		if (output[i].Ad != output[i-1].Ad || 
-			output[i].Query != output[i-1].Query) {
-		printf("%d %d\n", output[i].Ad, output[i].Query);
+	if (outputSize > 0) {
+		printf("%d %d\n", output[0].Ad, output[0].Query);
 		count++;
+		for (int i = 1 ; i < outputSize ; i++) {
+			if (output[i].Ad != output[i-1].Ad || 
+				output[i].Query != output[i-1].Query) {
+			printf("%d %d\n", output[i].Ad, output[i].Query);
+			count++;
+			}
 		}
 	}
 	printf("********************\n");
+	printf("total : %d", count);
 	delete [] output;
 }
 
@@ -238,6 +246,9 @@ void DATA::Impressed(int& user1, int& user2)
 	int size1 = USER[user1].Click.size();
 	int size2 = USER[user2].Click.size();
 	Imp_output *output = new Imp_output[MAX];
+	#ifdef IMPRESSED
+	cout << "new struct init success\n";
+	#endif
 	int tmp = 0;
 	for (int i = 0 ; i < size1 ; i++) {
 		for (int j = 0 ; j < size2 ; j++) {
@@ -249,7 +260,13 @@ void DATA::Impressed(int& user1, int& user2)
 			}
 		}
 	}
+	#ifdef IMPRESSED
+	cout << "filter success\n";
+	#endif
 	qsort(output, tmp, sizeof(Imp_output), Imp_compare);
+	#ifdef IMPRESSED
+	cout << "qsort success\n";
+	#endif
 	printf("********************\n");
 	printf("%d\n", output[0].Ad);
 	cout << "\t" << output[0].url;
@@ -294,7 +311,7 @@ void DATA::Profit(int& ad, double& std_ratio)
 void DATA::Print(int& user)
 {
 	if (user < 0) {
-		printf("biggest usr = %d\n biggest ad = %d\n", max_usr, max_ad);
+		printf("biggest usr = %d\nbiggest ad = %d\nsmallest ad = %d\n", max_usr, max_ad, min_ad);
 		return;
 	}
 	printf("Click\tImp\tURL\t\t\tAd\t\tAdv\tDepth\tPos\tQuery\t\tKeyword\tTitle\tDes\n");
