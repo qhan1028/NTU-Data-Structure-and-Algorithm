@@ -7,7 +7,7 @@
 using namespace std;
 #define USER_MAX 24000000
 #define AD_MAX 24000000
-#define URL_MAX 22
+#define URL_MAX 23
 
 #define READ
 #define INIT
@@ -219,13 +219,13 @@ void Imp_assign(Imp_output *out, int tmp, DATA_USER *in, int user, int index)
 	out[tmp].adv = in[user].Advertiser[index];
 	out[tmp].key = in[user].Keyword[index];
 	out[tmp].title = in[user].Title[index];
-	out[tmp].title = in[user].Description[index];
+	out[tmp].des = in[user].Description[index];
 }
 
 int Imp_isSame(Imp_output *tmp, int a, int b)
 {
 	return (tmp[a].Ad==tmp[b].Ad && tmp[a].adv==tmp[b].adv && tmp[a].key==tmp[b].key &&
-		tmp[a].title==tmp[b].title && tmp[a].des==tmp[b].des && tmp[a].url.compare(tmp[b].url));
+		tmp[a].title==tmp[b].title && tmp[a].des==tmp[b].des && tmp[a].url.compare(tmp[b].url)==0);
 }
 
 void DATA::Impressed(int& user1, int& user2)
@@ -234,7 +234,7 @@ void DATA::Impressed(int& user1, int& user2)
 	int size1 = USER[user1].Click.size();
 	int size2 = USER[user2].Click.size();
 	Imp_output *output = new Imp_output[USER_MAX];
-	int tmp = 0;
+	int tmp = 0;1
 	for (int i = 0 ; i < size1 ; i++) {
 		for (int j = 0 ; j < size2 ; j++) {
 			if (USER[user1].Ad[i] == USER[user2].Ad[j]) {
@@ -248,9 +248,11 @@ void DATA::Impressed(int& user1, int& user2)
 	qsort(output, tmp, sizeof(Imp_output), Imp_compare);
 	printf("********************\n");
 	printf("%d\n", output[0].Ad);
-	for (int i = 0 ; i < tmp ; i++) {
-		if (output[i].Ad != output[i-1].Ad && i > 0) printf("%d\n", output[i].Ad);
-		if (!Imp_isSame(output, i, i-1) && i > 0) {
+	cout << "\t" << output[0].url;
+	printf(" %d %d %d %d\n", output[0].adv, output[0].key, output[0].title, output[0].des);
+	for (int i = 1 ; i < tmp ; i++) {
+		if (output[i].Ad != output[i-1].Ad) printf("%d\n", output[i].Ad);
+		if (!Imp_isSame(output, i, i-1)) {
 			cout << "\t" << output[i].url;
 			printf(" %d %d %d %d\n", output[i].adv, output[i].key, output[i].title, output[i].des);
 		}
