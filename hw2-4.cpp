@@ -1,7 +1,7 @@
 #include <iostream> //cin cout
 #include <cstdio> //printf scanf fscanf FILE
 #include <cstdlib> //qsort
-#include <ctime>
+#include <ctime> //time
 #include <vector> //vector
 #include <string> //string compare
 using namespace std;
@@ -10,19 +10,12 @@ using namespace std;
 #define AD_MAX 24000000
 #define URL_MAX 23
 #define IMPRESSED_MAX 80000000
-
 //#define READ
 //#define READ_PROCESS
 //#define INIT
 //#define PRINT
 //#define TIME
 //#define IMPRESSED
-
-// Read 	OK
-// Get 		OK
-// clicked 	OK
-// Profit 	OK
-// impressed OK
 
 class DATA_USER { //user branch
 public:
@@ -106,7 +99,7 @@ void DATA::Read(FILE *ptr)
 	do {
 		fscanf(ptr, "%d%d%s%d%d%d%d%d%d%d%d%d",&click, &imp, &url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
 		string s_url(url);
-		
+		if (feof(ptr)) break;
 		USER[usr].Click.push_back(click);//
 		USER[usr].Impression.push_back(imp);//
 		USER[usr].Ad.push_back(ad);//
@@ -137,10 +130,6 @@ void DATA::Read(FILE *ptr)
 		if (count==37500000) printf("25%%\n");
 		if (count==75000000) printf("50%%\n");
 		if (count==112500000) printf("75%%\n");
-		#endif
-		#ifdef TEST
-		count++;
-		if (count == TEST) break;
 		#endif
 	} while (!feof(ptr));
 	#ifdef READ
@@ -329,7 +318,7 @@ void DATA::Profit(int& ad, double& std_ratio)
 		if (temp_usr[i].Click == 0 || temp_usr[i].Impression == 0) continue;
 		usr_ratio = (double)temp_usr[i].Click/(double)temp_usr[i].Impression;
 		if (usr_ratio >= std_ratio) {
-			cout << i << endl;
+			printf("%d\n", i);
 			count++;
 		}
 	}
