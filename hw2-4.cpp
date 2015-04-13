@@ -298,6 +298,7 @@ void DATA::Impressed(int& user1, int& user2)
 		printf("%d\n", output[0].Ad);
 		cout << "\t" << output[0].url;
 		printf(" %d %d %d %d\n", output[0].adv, output[0].key, output[0].title, output[0].des);
+		count++;
 		for (int i = 1 ; i < tmp ; i++) {
 			if (output[i].Ad != output[i-1].Ad) printf("%d\n", output[i].Ad);
 			if (!Imp_isSame(output, i, i-1)) {
