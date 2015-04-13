@@ -8,16 +8,15 @@ using namespace std;
 
 #define USER_MAX 24000000
 #define AD_MAX 24000000
-#define MAX 150000000
 #define URL_MAX 23
 #define IMPRESSED_MAX 80000000
 
-#define READ
-#define READ_PROCESS
-#define INIT
-#define PRINT
-#define TIME
-#define IMPRESSED
+//#define READ
+//#define READ_PROCESS
+//#define INIT
+//#define PRINT
+//#define TIME
+//#define IMPRESSED
 
 // Read 	OK
 // Get 		OK
@@ -60,7 +59,7 @@ public:
 	DATA();
 	~DATA();
 
-	void Read();
+	void Read(FILE*);
 	void Get(int&, int&, int&, int&, int&);
 	void Clicked(int&);
 	void Impressed(int&, int&);
@@ -95,11 +94,8 @@ DATA::~DATA()
 	delete [] AD;
 }
 
-void DATA::Read()
+void DATA::Read(FILE *ptr)
 {
-	//char file[1000];
-	//scanf("%s", file);
-	FILE *ptr = fopen("/tmp2/KDDCup2012/track2/kddcup2012track2.txt", "r");
 	int click, imp, ad, adv, depth, pos, query, key, title, des, usr, count = 0;
 	char url[URL_MAX];
 	max_usr = max_ad = 0;
@@ -107,10 +103,10 @@ void DATA::Read()
 	#ifdef READ
 	printf("file open success\tat %f secs\nreading...\n", (double)clock()/CLOCKS_PER_SEC);
 	#endif
-	while (!feof(ptr)) {
+	do {
 		fscanf(ptr, "%d%d%s%d%d%d%d%d%d%d%d%d",&click, &imp, &url, &ad, &adv, &depth, &pos, &query, &key, &title, &des, &usr);
-
 		string s_url(url);
+		
 		USER[usr].Click.push_back(click);//
 		USER[usr].Impression.push_back(imp);//
 		USER[usr].Ad.push_back(ad);//
@@ -136,17 +132,17 @@ void DATA::Read()
 		if (usr > max_usr) max_usr = usr;
 		if (ad > max_ad) max_ad = ad;
 		if (ad < min_ad) min_ad = ad;
-	#ifdef READ_PROCESS
+		#ifdef READ_PROCESS
 		count++;
 		if (count==37500000) printf("25%%\n");
 		if (count==75000000) printf("50%%\n");
 		if (count==112500000) printf("75%%\n");
-	#endif
-	#ifdef TEST
+		#endif
+		#ifdef TEST
 		count++;
 		if (count == TEST) break;
-	#endif
-	}
+		#endif
+	} while (!feof(ptr));
 	#ifdef READ
 	printf("100%%\n");
 	printf("read success\t\tat %f secs\n",(double)clock()/CLOCKS_PER_SEC);
@@ -369,10 +365,11 @@ void DATA::Print(int& user)
 
 void DATA::Quit(){ cout << "# leave the program" << endl;}
 
-int main(void)
+int main(int argc, char const *argv[])
 {
 	DATA data;
-	data.Read();
+	FILE *ptr = fopen(argv[1], "r");
+	data.Read(ptr);
 	string input;
 	int ad, depth, pos, query, usr1, usr2;
 	double ratio;
