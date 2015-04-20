@@ -95,38 +95,37 @@ void DATA::Infix()
 {
 	int isNegetive = 0;
 	int tmp_num = 0;
-	int preNum;
+	int preNum = 0;
 	for (int pos = 0 ; pos < input_size ; pos++) {
-		if (input[pos] == '\n' && preNum) {
-			EQUATION tmp;
-			tmp.element = (isNegetive)? (-1)*tmp_num : tmp_num;
-			tmp.isFunction = 0;
-			infix.push_back(tmp);
+		if (input[pos] == '\n' && preNum) { //last number
+			EQUATION in;
+			in.element = (isNegetive)? (-1)*tmp_num : tmp_num;
+			in.isFunction = 0;
+			infix.push_back(in);
 		}
-		if (input[pos] == ' ') continue;
-		if (isNumber(input[pos])) {
+		if (input[pos] == ' ') continue; //ignore spaces
+		if (isNumber(input[pos])) { //numbers have many digits
 			tmp_num = tmp_num*10 + input[pos]- '0';
 			preNum = 1;
 			continue;
 		}
 		if (isOperand(input[pos])) {
-			if (preNum) {
-				EQUATION tmp;
-
-				tmp.element = (isNegetive)? (-1)*tmp_num : tmp_num;
-				tmp.isFunction = 0;
-				infix.push_back(tmp);
+			if (preNum) { //first process numbers
+				EQUATION in;
+				in.element = (isNegetive)? (-1)*tmp_num : tmp_num;
+				in.isFunction = 0;
+				infix.push_back(in);
 				isNegetive = preNum = 0;
 			
 				if (input[pos] == input[pos+1]) {
-					tmp.element = translate1(input[pos]);
-					tmp.isFunction = 1;
-					infix.push_back(tmp);
+					in.element = translate1(input[pos]);
+					in.isFunction = 1;
+					infix.push_back(in);
 					pos++; //because these operators need two chars
 				} else {
-					tmp.element = translate2(input[pos]);
-					tmp.isFunction = 1;
-					infix.push_back(tmp);
+					in.element = translate2(input[pos]);
+					in.isFunction = 1;
+					infix.push_back(in);
 				}
 			} else { //unary + -
 				if (input[pos] == '-') isNegetive = 1;
@@ -138,7 +137,7 @@ void DATA::Infix()
 
 bool TopIsBigger(int input, int top)
 {
-	if (top == P_L) return false;
+	if (top == P_L) return false; //force the operand behind the P_L push into the stack
 	else return (top/10-input/10 >= 0)? true : false;
 }
 
@@ -171,9 +170,10 @@ void DATA::Postfix()
 					postfix.push_back(post);
 					operators.pop();
 				}
-				operators.pop();
+				operators.pop(); //pop out the left parantheses
 			} else { //normal operators
-				while (TopIsBigger(infix[pos].element, operators.top())) {
+				while (TopIsBigger(infix[pos].element, operators.top())) { //if top is bigger or the same, pop out top
+					//beware : P_L is smaller than everyone
 					EQUATION post;
 					post.element = operators.top();
 					post.isFunction = 1;
@@ -188,7 +188,7 @@ void DATA::Postfix()
 
 void DATA::Calculate()
 {
-	
+
 }
 
 int main()
