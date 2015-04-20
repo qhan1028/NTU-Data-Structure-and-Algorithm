@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdio>
 #include <stack>
+#include <vector>
 #include "hw3_1.h"
 using namespace std;
 
@@ -59,10 +60,10 @@ bool isOperand(char input)
 int translate1(char input)
 {
 	switch(input) {
-		case:'<' return B_LS;
-		case:'>' return B_RS;
-		case:'&' return L_AND;
-		case:'|' return L_OR;
+		case'<': return B_LS;
+		case'>': return B_RS;
+		case'&': return L_AND;
+		case'|': return L_OR;
 		default: 
 		cout << "operator translation error\n";
 		return -1;
@@ -72,18 +73,18 @@ int translate1(char input)
 int translate2(char input)
 {
 	switch(input) {
-		case:'+' return ADD;
-		case:'-' return SUB;
-		case:'*' return MUL;
-		case:'/' return DIV;
-		case:'%' return MOD;
-		case:'&' return B_AND;
-		case:'^' return B_XOR;
-		case:'|' return B_OR;
-		case:'(' return P_L;
-		case:')' return P_R;
-		case:'~' return B_NOT;
-		case:'!' return L_NOT
+		case'+': return ADD;
+		case'-': return SUB;
+		case'*': return MUL;
+		case'/': return DIV;
+		case'%': return MOD;
+		case'&': return B_AND;
+		case'^': return B_XOR;
+		case'|': return B_OR;
+		case'(': return P_L;
+		case')': return P_R;
+		case'~': return B_NOT;
+		case'!': return L_NOT;
 		default: 
 		cout << "operator translation error\n";
 		return -1;
@@ -94,6 +95,7 @@ void DATA::Infix()
 {
 	int isNegetive = 0;
 	int tmp_num = 0;
+	int preNum;
 	for (int pos = 0 ; pos < input_size ; pos++) {
 		if (input[pos] == '\n' && preNum) {
 			EQUATION tmp;
@@ -126,8 +128,9 @@ void DATA::Infix()
 					tmp.isFunction = 1;
 					infix.push_back(tmp);
 				}
-			} else {
+			} else { //unary + -
 				if (input[pos] == '-') isNegetive = 1;
+				if (input[pos] == '+') isNegetive = 0;
 			}
 		}
 	}
@@ -142,14 +145,15 @@ bool TopIsBigger(int input, int top)
 void DATA::Postfix()
 {
 	stack<int> operators;
-	int parantheses = 0
+	int parantheses = 0;
 	for (int pos = 0 ; pos <= infix.size() ; pos++) {
 		if (pos == infix.size()) { //end
 			while (!operators.empty()) {
 				EQUATION post;
-				post.element = operators.pop();
+				post.element = operators.top();
 				post.isFunction = 1;
 				postfix.push_back(post);
+				operators.pop();
 			}
 			break;
 		}
@@ -162,22 +166,29 @@ void DATA::Postfix()
 			} else if (infix[pos].element == P_R) { //right parantheses
 				while (operators.top() != P_L) {
 					EQUATION post;
-					post.element = operators.pop();
+					post.element = operators.top();
 					post.isFunction = 1;
 					postfix.push_back(post);
+					operators.pop();
 				}
 				operators.pop();
 			} else { //normal operators
 				while (TopIsBigger(infix[pos].element, operators.top())) {
 					EQUATION post;
-					post.element = operators.pop();
+					post.element = operators.top();
 					post.isFunction = 1;
 					postfix.push_back(post);
+					operators.pop();
 				}
 				operators.push(infix[pos].element);
 			}
 		}
 	}
+}
+
+void DATA::Calculate()
+{
+	
 }
 
 int main()
