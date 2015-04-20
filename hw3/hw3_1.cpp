@@ -19,7 +19,7 @@ public:
 	void Read();
 	void Infix();
 	void Postfix();
-	void Calculate();
+	void Execute();
 
 	char *input;
 	int input_size;
@@ -30,15 +30,9 @@ public:
 	int result;
 };
 
-DATA::DATA()
-{
-	input = new char[MAX];
-}
+DATA::DATA() { input = new char[MAX];}
 
-DATA::~DATA()
-{
-	delete [] input;
-}
+DATA::~DATA() { delete [] input;}
 
 void DATA::Read()
 {
@@ -186,9 +180,45 @@ void DATA::Postfix()
 	}
 }
 
-void DATA::Calculate()
+int Calculate(int value1, int operat, int value2)
 {
+	switch (operat) {
+		case ADD : return (value1 + value2);
+		case SUB : return (value1 - value2);
+		case MUL : return (value1 * value2);
+		case DIV : return (value1 / value2);
+		case MOD : return (value1 % value2);
+		case B_AND : return (value1 & value2);
+		case B_OR : return (value1 | value2);
+		case B_XOR : return (value1 ^ value2);
+		case B_LS : return (value1 << value2);
+		case B_RS : return (value1 >> value2);
+		case L_AND : return (value1 && value2);
+		case L_OR : return (value1 || value2);
+	}
+}
 
+void DATA::Execute()
+{
+	stack<int> number;
+	stack<int> operators;
+	int value1;
+	int value2;
+
+	for (int pos = 0 ; pos < postfix.size() ; pos++) {
+		if (!postfix[pos].isFunction) {
+			number.push(postfix[pos].element);
+		} else if (postfix[pos].isFunction) {
+			if 
+			value2 = number.top(); number.pop();
+			value1 = number.top(); number.pop();
+			result = Calculate(value1, postfix[pos].element, value2);
+			number.push(result);
+		} 
+	}
+	#ifdef ANSWER
+	printf("%d\n", result);
+	#endif
 }
 
 int main()
@@ -198,8 +228,7 @@ int main()
 		data.Read();
 		data.Infix();
 		data.Postfix();
-		data.Calculate();
+		data.Execute();
 	} while(cin.peek() != EOF);
-
 	return 0;
 }
