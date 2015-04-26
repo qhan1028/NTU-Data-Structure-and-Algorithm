@@ -23,11 +23,9 @@ public:
 
 	char *input;
 	int input_size;
-	
+	int result;
 	vector<EQUATION> postfix;
 	vector<EQUATION> infix;
-
-	int result;
 };
 
 DATA::DATA() { input = new char[MAX];}
@@ -59,72 +57,76 @@ int translate1(char input)
 		case'&': return L_AND;
 		case'|': return L_OR;
 		default: 
-		cout << "operator translation error\n";
+		cout << "operator translation1 error\n";
 		return -1;
 	}
 }
 
 int translate2(char input)
 {
-	switch(input) {
-		case'+': return ADD;
-		case'-': return SUB;
-		case'*': return MUL;
-		case'/': return DIV;
-		case'%': return MOD;
-		case'&': return B_AND;
-		case'^': return B_XOR;
-		case'|': return B_OR;
-		case'(': return P_L;
-		case')': return P_R;
-		case'~': return B_NOT;
-		case'!': return L_NOT;
-		default: 
-		cout << "operator translation error\n";
-		return -1;
+	int function[12] = {ADD, SUB, MUL, DIV, MOD, B_AND, B_XOR, B_OR, B_NOT, L_NOT, P_L, P_R};
+	char output[12] = {'+','-','*','/','%','&','^','|','~','!','(',')'}; 
+	for (int i = 0 ; i < 18 ; i++) 
+		if (input == output[i]) return function[i];
+}
+
+int translate3(char input)
+{
+	switch (input) {
+		case '+' : return U_ADD;
+		case '-' : return U_SUB;
+		default : return -1;
 	}
+}
+
+void printFunc(int input)
+{
+	int function[16] = {ADD, SUB, MUL, DIV, MOD, B_AND, B_XOR, B_OR, B_NOT, B_LS, B_RS, L_AND, L_OR, L_NOT, U_ADD, U_SUB};
+	char output[16][4] = {"+ ", "- ", "* ", "/ ", "% ","& ","^ ","| ","~ ", "<< ", ">> ", "&& ", "|| ", "! ", "+ ", "- "}; 
+	for (int i = 0 ; i < 16 ; i++) if (input == function[i]) cout << output[i];
 }
 
 void DATA::Infix()
 {
-	int isNegetive = 0;
 	int tmp_num = 0;
 	int preNum = 0;
-	for (int pos = 0 ; pos < input_size ; pos++) {
-		if (input[pos] == '\n' && preNum) { //last number
+	for (int pos = 0 ; pos <= input_size ; pos++) {
+		if (pos == input_size && preNum) { //last number
 			EQUATION in;
-			in.element = (isNegetive)? (-1)*tmp_num : tmp_num;
+			in.element = tmp_num;
 			in.isFunction = 0;
-			infix.push_back(in);
+			infix.push_back(in); break;
 		}
 		if (input[pos] == ' ') continue; //ignore spaces
 		if (isNumber(input[pos])) { //numbers have many digits
 			tmp_num = tmp_num*10 + input[pos]- '0';
-			preNum = 1;
-			continue;
+			preNum = 1; continue;
 		}
 		if (isOperand(input[pos])) {
+			EQUATION in;
 			if (preNum) { //first process numbers
-				EQUATION in;
-				in.element = (isNegetive)? (-1)*tmp_num : tmp_num;
+				in.element = tmp_num;
 				in.isFunction = 0;
 				infix.push_back(in);
-				isNegetive = preNum = 0;
-			
-				if (input[pos] == input[pos+1]) {
-					in.element = translate1(input[pos]);
-					in.isFunction = 1;
+			} 
+			in.isFunction = 1;
+			if (input[pos] == input[pos+1] && input[pos] != '(' && input[pos] != ')' && input[pos] != '+' && input[pos] != '-') {
+				in.element = translate1(input[pos]);
+				infix.push_back(in);
+				pos++; //because these operators need two chars
+			} else if (input[pos] == '+' || input[pos] == '-') {
+				if (pos == 0 || (input[pos-1] != ')' && !preNum) ) {
+					in.element = translate3(input[pos]);
 					infix.push_back(in);
-					pos++; //because these operators need two chars
 				} else {
 					in.element = translate2(input[pos]);
-					in.isFunction = 1;
 					infix.push_back(in);
 				}
-			} else { //unary + -
-				if (input[pos] == '-') isNegetive = 1;
-				if (input[pos] == '+') isNegetive = 0;
+			} else {
+				in.element = translate2(input[pos]);
+				infix.push_back(in);
 			}
+			preNum = tmp_num = 0;
 		}
 	}
 }
@@ -138,7 +140,6 @@ bool TopIsBigger(int input, int top)
 void DATA::Postfix()
 {
 	stack<int> operators;
-	int parantheses = 0;
 	for (int pos = 0 ; pos <= infix.size() ; pos++) {
 		if (pos == infix.size()) { //end
 			while (!operators.empty()) {
@@ -148,29 +149,26 @@ void DATA::Postfix()
 				postfix.push_back(post);
 				operators.pop();
 			}
-			break;
 		}
 		if (!infix[pos].isFunction) { //numbers
 			postfix.push_back(infix[pos]);
 		}
 		else if (infix[pos].isFunction) { //operators
+			EQUATION post;
+			post.isFunction = 1;
 			if (infix[pos].element == P_L) { //left parantheses
 				operators.push(P_L);
 			} else if (infix[pos].element == P_R) { //right parantheses
 				while (operators.top() != P_L) {
-					EQUATION post;
 					post.element = operators.top();
-					post.isFunction = 1;
 					postfix.push_back(post);
 					operators.pop();
 				}
 				operators.pop(); //pop out the left parantheses
 			} else { //normal operators
-				while (TopIsBigger(infix[pos].element, operators.top())) { //if top is bigger or the same, pop out top
+				while (!operators.empty() && TopIsBigger(infix[pos].element, operators.top())) { //if top is bigger or the same, pop out top
 					//beware : P_L is smaller than everyone
-					EQUATION post;
 					post.element = operators.top();
-					post.isFunction = 1;
 					postfix.push_back(post);
 					operators.pop();
 				}
@@ -178,9 +176,15 @@ void DATA::Postfix()
 			}
 		}
 	}
+	cout << "Postfix Exp: ";
+	for (int pos = 0 ; pos < postfix.size()-1 ; pos++) {
+		if (!postfix[pos].isFunction) cout << postfix[pos].element << " ";
+		else printFunc(postfix[pos].element);
+	}
+	cout << "\n";
 }
 
-int Calculate(int value1, int operat, int value2)
+int Calculate1(int value1, int operat, int value2)
 {
 	switch (operat) {
 		case ADD : return (value1 + value2);
@@ -195,6 +199,20 @@ int Calculate(int value1, int operat, int value2)
 		case B_RS : return (value1 >> value2);
 		case L_AND : return (value1 && value2);
 		case L_OR : return (value1 || value2);
+		default : cout << "Calculate1 error\n";
+	}
+	return 0;
+}
+
+int Calculate2(int value, int operat)
+{
+	if (operat == B_NOT) return ~(value);
+	if (operat == L_NOT) return !(value);
+	if (operat == U_ADD) return +(value);
+	if (operat == U_SUB) return -(value);
+	else {
+		cout << "Calculate2 error\n";
+		return 0;
 	}
 }
 
@@ -202,33 +220,35 @@ void DATA::Execute()
 {
 	stack<int> number;
 	stack<int> operators;
-	int value1;
-	int value2;
+	int value1, value2;
 
 	for (int pos = 0 ; pos < postfix.size() ; pos++) {
 		if (!postfix[pos].isFunction) {
 			number.push(postfix[pos].element);
 		} else if (postfix[pos].isFunction) {
-			if 
-			value2 = number.top(); number.pop();
-			value1 = number.top(); number.pop();
-			result = Calculate(value1, postfix[pos].element, value2);
-			number.push(result);
+			if (postfix[pos].element == B_NOT || postfix[pos].element == L_NOT || postfix[pos].element == U_ADD || postfix[pos].element == U_SUB) {
+				value1 = number.top(); number.pop();
+				result = Calculate2(value1, postfix[pos].element);
+				number.push(result);
+			} else {
+				value2 = number.top(); number.pop();
+				value1 = number.top(); number.pop();
+				result = Calculate1(value1, postfix[pos].element, value2);
+				number.push(result);
+			}
 		} 
 	}
-	#ifdef ANSWER
-	printf("%d\n", result);
-	#endif
+	printf("RESULT: %d\n", result);
 }
 
 int main()
 {
-	do {
+	while(cin.peek() != EOF) {
 		DATA data;
 		data.Read();
 		data.Infix();
 		data.Postfix();
 		data.Execute();
-	} while(cin.peek() != EOF);
+	}
 	return 0;
 }

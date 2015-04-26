@@ -1,21 +1,25 @@
 #define MAX 1000002
 
-#define ADD 1
-#define SUB 2
-#define MUL 3
-#define DIV 4
-#define MOD 5
+#define ADD 71
+#define SUB 72
 
-#define B_AND 21
-#define B_OR 22
-#define B_XOR 23
-#define B_NOT 24
-#define B_LS 25
-#define B_RS 26
+#define MUL 81
+#define DIV 82
+#define MOD 83
 
-#define P_L 31
-#define P_R 32
+#define U_ADD 101
+#define U_SUB 102
 
-#define L_AND 41
-#define L_OR 42
-#define L_NOT 43
+#define B_AND 50
+#define B_OR 30
+#define B_XOR 40
+#define B_NOT 92
+#define B_LS 61
+#define B_RS 62
+
+#define P_L 111
+#define P_R 112
+
+#define L_AND 20
+#define L_OR 10
+#define L_NOT 91
