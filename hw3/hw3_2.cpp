@@ -134,12 +134,6 @@ void DATA::Infix()
 			frac_count = fraction = preNum = tmp_num = 0;
 		}
 	}
-	cout << "Infix Exp: ";
-	for (int pos = 0 ; pos < infix.size() ; pos++) {
-		if (!infix[pos].isFunction && pos != infix.size()) printf("%f ", infix[pos].element);
-		else printFunc(infix[pos].element);
-	}
-	cout << "\n";
 }
 
 bool TopIsBigger(double input, double top)
@@ -152,28 +146,46 @@ void DATA::Postfix()
 {
 	stack<double> operators;
 	for (int pos = 0 ; pos <= infix.size() ; pos++) {
-		while (pos == infix.size()) {//end
+		while (pos == infix.size() && !operators.empty()) {//end
 			EQUATION post;
 			post.element = operators.top();
 			post.isFunction = 1;
 			postfix.push_back(post);
 			operators.pop();
-			if(operators.empty()) break;
+			printf("pop ");
+			printFunc(post.element);
+			printf("from the stack\n");
+			printf("push back ");
+			printFunc(post.element);
+			printf("to the postfix\n");
 		}
-		if (!infix[pos].isFunction) { //numbers
+		if (!infix[pos].isFunction && pos != infix.size()) { //numbers
 			postfix.push_back(infix[pos]);
+			printf("push back %f to the postfix\n", infix[pos].element);
 		}
 		else if (infix[pos].isFunction) { //operators
 			EQUATION post;
 			post.isFunction = 1;
 			if (infix[pos].element == P_L) { //left parantheses
 				operators.push(P_L);
+				printf("push ");
+				printFunc(infix[pos].element);
+				printf("to the stack\n");
 			} else if (infix[pos].element == P_R) { //right parantheses
 				while (operators.top() != P_L) {
 					post.element = operators.top();
 					postfix.push_back(post);
 					operators.pop();
+					printf("pop ");
+					printFunc(post.element);
+					printf("from the stack\n");
+					printf("push back ");
+					printFunc(post.element);
+					printf("to the postfix\n");
 				}
+				printf("pop ");
+				printFunc(operators.top());
+				printf("from the stack\n");
 				operators.pop(); //pop out the left parantheses
 			} else { //normal operators
 				while (!operators.empty() && TopIsBigger(infix[pos].element, operators.top())) { //if top is bigger or the same, pop out top
@@ -181,8 +193,17 @@ void DATA::Postfix()
 					post.element = operators.top();
 					postfix.push_back(post);
 					operators.pop();
+					printf("pop ");
+					printFunc(post.element);
+					printf("from the stack\n");
+					printf("push back ");
+					printFunc(post.element);
+					printf("to the postfix\n");
 				}
 				operators.push(infix[pos].element);
+				printf("push ");
+				printFunc(infix[pos].element);
+				printf("to the stack\n");
 			}
 		}
 	}
