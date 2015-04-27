@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <stack>
 #include <vector>
-#include "hw3_1.h"
+#include "hw3_2.h"
 using namespace std;
 
 class EQUATION {
@@ -40,41 +40,38 @@ void DATA::Read()
 
 bool isNumber(char input) {return (input >= '0' && input <= '9');}
 
-int translate1(char input)
-{
-	switch(input) {
-		case'<': return B_LS;
-		case'>': return B_RS;
-		case'&': return L_AND;
-		case'|': return L_OR;
-		default: 
-		cout << "operator translation1 error\n";
-		return -1;
-	}
-}
 
-int translate2(char input)
-{
-	int function[12] = {ADD, SUB, MUL, DIV, MOD, B_AND, B_XOR, B_OR, B_NOT, L_NOT, P_L, P_R};
-	char output[12] = {'+','-','*','/','%','&','^','|','~','!','(',')'}; 
-	for (int i = 0 ; i < 18 ; i++) 
-		if (input == output[i]) return function[i];
-}
-
-int translate3(char input)
-{
-	switch (input) {
-		case '+' : return U_ADD;
-		case '-' : return U_SUB;
-		default : return -1;
-	}
-}
 
 void printFunc(int input)
 {
 	int function[16] = {ADD, SUB, MUL, DIV, MOD, B_AND, B_XOR, B_OR, B_NOT, B_LS, B_RS, L_AND, L_OR, L_NOT, U_ADD, U_SUB};
 	char output[16][4] = {"+ ", "- ", "* ", "/ ", "% ","& ","^ ","| ","~ ", "<< ", ">> ", "&& ", "|| ", "! ", "+ ", "- "}; 
 	for (int i = 0 ; i < 16 ; i++) if (input == function[i]) cout << output[i];
+}
+
+int translate(char *input, int& pos, int preNum)
+{
+	char prev = input[pos-1];
+	char now = input[pos];
+	char next = input[pos+1];
+	char function[6] = {'s','c','e','l','p','f'}
+	if (now == '+' || now == '-') {
+		if (prev != ')' && !preNum) {
+			return (now == '+')? U_ADD : U_SUB;
+		} else {
+			return (now == '+')? ADD : SUB;
+		}
+	} else if (now == 's' && next == 'q') {
+		pos += 3;
+		return SQRT;
+	} else if (now == '(' || now == ')' || now == '*') {
+		if (now == '(') return P_L;
+		if (now == ')') return P_R;
+		if (now == '*') return MUL;
+	} else {
+		for (int i = 0 ; i < 6 ; i++) if (now == function[i]) return function_num[i];
+	}
+	return -1;
 }
 
 void DATA::Infix()
@@ -101,22 +98,8 @@ void DATA::Infix()
 				infix.push_back(in);
 			} 
 			in.isFunction = 1;
-			if (input[pos] == input[pos+1] && input[pos] != '(' && input[pos] != ')' && input[pos] != '+' && input[pos] != '-') {
-				in.element = translate1(input[pos]);
-				infix.push_back(in);
-				pos++; //because these operators need two chars
-			} else if (input[pos] == '+' || input[pos] == '-') {
-				if (pos == 0 || (input[pos-1] != ')' && !preNum) ) {
-					in.element = translate3(input[pos]);
-					infix.push_back(in);
-				} else {
-					in.element = translate2(input[pos]);
-					infix.push_back(in);
-				}
-			} else {
-				in.element = translate2(input[pos]);
-				infix.push_back(in);
-			}
+			in.element = translate(input, pos, preNum);
+			infix.push_back(in);
 			preNum = tmp_num = 0;
 		}
 	}
