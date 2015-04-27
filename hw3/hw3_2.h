@@ -14,4 +14,7 @@
 #define LOG 54
 #define POW 55
 #define SQRT 56
-#define FAB 57
+#define FABS 57
+
+#define P_L 61
+#define P_R 62

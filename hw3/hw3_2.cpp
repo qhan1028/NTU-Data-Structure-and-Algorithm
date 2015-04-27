@@ -2,12 +2,13 @@
 #include <cstdio>
 #include <stack>
 #include <vector>
+#include <cmath>
 #include "hw3_2.h"
 using namespace std;
 
 class EQUATION {
 public:
-	int element;
+	double element;
 	int isFunction;
 };
 
@@ -23,7 +24,7 @@ public:
 
 	char *input;
 	int input_size;
-	int result;
+	double result;
 	vector<EQUATION> postfix;
 	vector<EQUATION> infix;
 };
@@ -38,91 +39,126 @@ void DATA::Read()
 	input_size = cin.gcount();
 }
 
-bool isNumber(char input) {return (input >= '0' && input <= '9');}
+bool isNumber(char input) {return (input >= '0' && input <= '9') || input == '.';}
 
-
-
-void printFunc(int input)
+bool isOperat(char input) 
 {
-	int function[16] = {ADD, SUB, MUL, DIV, MOD, B_AND, B_XOR, B_OR, B_NOT, B_LS, B_RS, L_AND, L_OR, L_NOT, U_ADD, U_SUB};
-	char output[16][4] = {"+ ", "- ", "* ", "/ ", "% ","& ","^ ","| ","~ ", "<< ", ">> ", "&& ", "|| ", "! ", "+ ", "- "}; 
-	for (int i = 0 ; i < 16 ; i++) if (input == function[i]) cout << output[i];
+	char function[12] = {'+', '-', '*', 's', 'c', 'e', 'l', 'p', 'f', '(', ')', ','};
+	for (int i = 0 ; i < 12 ; i++) if (input == function[i]) return true;
+	return false;
 }
 
-int translate(char *input, int& pos, int preNum)
+double translate(char input[], int& pos, int preNum, vector<EQUATION> infix, int infix_pos)
 {
-	char prev = input[pos-1];
-	char now = input[pos];
-	char next = input[pos+1];
-	char function[6] = {'s','c','e','l','p','f'}
-	if (now == '+' || now == '-') {
-		if (prev != ')' && !preNum) {
-			return (now == '+')? U_ADD : U_SUB;
-		} else {
-			return (now == '+')? ADD : SUB;
-		}
-	} else if (now == 's' && next == 'q') {
+	char function[5] = {'s','c','e','l','p'};
+	double function_num[5] = {SIN, COS, EXP, LOG, POW};
+	if (input[pos] == '+' || input[pos] == '-') { //unary + -
+		if (infix_pos >= 0 && (infix[infix_pos].element == P_R || (infix[infix_pos].isFunction == 0))) 
+			return (input[pos] == '+')? ADD : SUB;
+		else return (input[pos] == '+')? U_ADD : U_SUB;
+	} else if (input[pos] == 's' && input[pos+1] == 'q') { //sqrt
 		pos += 3;
 		return SQRT;
-	} else if (now == '(' || now == ')' || now == '*') {
-		if (now == '(') return P_L;
-		if (now == ')') return P_R;
-		if (now == '*') return MUL;
-	} else {
-		for (int i = 0 ; i < 6 ; i++) if (now == function[i]) return function_num[i];
+	} else if (input[pos] == 'f') { //fabs
+		pos += 3;
+		return FABS;
+	} else if (input[pos] == '(' || input[pos] == ')' || input[pos] == '*') { //parenthesis and  mul
+		if (input[pos] == '(') return P_L;
+		if (input[pos] == ')') return P_R;
+		if (input[pos] == '*') return MUL;
+	} else { // sin cos log exp pow
+		for (int i = 0 ; i < 5 ; i++) {
+			if (input[pos] == function[i]) {
+				pos += 2;
+				return function_num[i];
+			}
+		}
 	}
+	cout << "translate error\n"; 
 	return -1;
+}
+
+void printFunc(double input)
+{
+	double function[14] = {ADD, SUB, MUL, U_ADD, U_SUB, SIN, COS, EXP, LOG, POW, SQRT, FABS, P_L, P_R};
+	char output[14][6] = {"+ ", "- ", "* ", "+ ", "- ", "sin ", "cos ", "exp ", "log ", "pow ", "sqrt ", "fabs ", "( ", ") "}; 
+	for (int i = 0 ; i < 14 ; i++) if (input == function[i]) cout << output[i];
 }
 
 void DATA::Infix()
 {
-	int tmp_num = 0;
+	double tmp_num = 0;
+	int frac_count = 0;
 	int preNum = 0;
+	int fraction = 0;
 	for (int pos = 0 ; pos <= input_size ; pos++) {
+		if (input[pos] == ' ') continue; //ignore spaces
 		if (pos == input_size && preNum) { //last number
 			EQUATION in;
+			for (int i = 0 ; i < frac_count ; i++) tmp_num /= 10;
 			in.element = tmp_num;
 			in.isFunction = 0;
 			infix.push_back(in); break;
 		}
-		if (input[pos] == ' ') continue; //ignore spaces
-		if (isNumber(input[pos])) { //numbers have many digits
-			tmp_num = tmp_num*10 + input[pos]- '0';
-			preNum = 1; continue;
+		if (isNumber(input[pos])) { //numbers have many digits and fractions
+			if (input[pos] == '.') {
+				fraction = 1;
+				continue;
+			} else if (fraction) {
+				tmp_num = tmp_num*10 + input[pos] - '0';
+				frac_count++;
+				preNum = 1; continue;
+			} else {
+				tmp_num = tmp_num*10 + input[pos] - '0';
+				preNum = 1; continue;
+			}
 		}
-		if (!isNumber(input[pos])) {
+		if (isOperat(input[pos])) {
 			EQUATION in;
 			if (preNum) { //first process numbers
+				for (int i = 0 ; i < frac_count ; i++) tmp_num /= 10;
 				in.element = tmp_num;
 				in.isFunction = 0;
 				infix.push_back(in);
 			} 
 			in.isFunction = 1;
-			in.element = translate(input, pos, preNum);
-			infix.push_back(in);
-			preNum = tmp_num = 0;
+			if (input[pos] == ',') {
+				in.element = P_R;
+				infix.push_back(in);
+				in.element = P_L;
+				infix.push_back(in);
+			} else {
+				in.element = translate(input, pos, preNum, infix, infix.size()-1);
+				infix.push_back(in);
+			}
+			frac_count = fraction = preNum = tmp_num = 0;
 		}
 	}
+	cout << "Infix Exp: ";
+	for (int pos = 0 ; pos < infix.size() ; pos++) {
+		if (!infix[pos].isFunction && pos != infix.size()) printf("%f ", infix[pos].element);
+		else printFunc(infix[pos].element);
+	}
+	cout << "\n";
 }
 
-bool TopIsBigger(int input, int top)
+bool TopIsBigger(double input, double top)
 {
 	if (top == P_L) return false; //force the operand behind the P_L push into the stack
-	else return (top/10-input/10 >= 0)? true : false;
+	else return ((int)top/10-(int)input/10 >= 0)? true : false;
 }
 
 void DATA::Postfix()
 {
-	stack<int> operators;
+	stack<double> operators;
 	for (int pos = 0 ; pos <= infix.size() ; pos++) {
-		if (pos == infix.size()) { //end
-			while (!operators.empty()) {
-				EQUATION post;
-				post.element = operators.top();
-				post.isFunction = 1;
-				postfix.push_back(post);
-				operators.pop();
-			}
+		while (pos == infix.size()) {//end
+			EQUATION post;
+			post.element = operators.top();
+			post.isFunction = 1;
+			postfix.push_back(post);
+			operators.pop();
+			if(operators.empty()) break;
 		}
 		if (!infix[pos].isFunction) { //numbers
 			postfix.push_back(infix[pos]);
@@ -151,73 +187,69 @@ void DATA::Postfix()
 		}
 	}
 	cout << "Postfix Exp: ";
-	for (int pos = 0 ; pos < postfix.size()-1 ; pos++) {
-		if (!postfix[pos].isFunction) cout << postfix[pos].element << " ";
+	for (int pos = 0 ; pos < postfix.size() ; pos++) {
+		if (!postfix[pos].isFunction && pos != postfix.size()-1) printf("%f ", postfix[pos].element);
 		else printFunc(postfix[pos].element);
 	}
 	cout << "\n";
 }
 
-int Calculate1(int value1, int operat, int value2)
+double Calculate1(double value1, double operat, double value2)
 {
-	switch (operat) {
+	switch ((int)operat) {
 		case ADD : return (value1 + value2);
 		case SUB : return (value1 - value2);
 		case MUL : return (value1 * value2);
-		case DIV : return (value1 / value2);
-		case MOD : return (value1 % value2);
-		case B_AND : return (value1 & value2);
-		case B_OR : return (value1 | value2);
-		case B_XOR : return (value1 ^ value2);
-		case B_LS : return (value1 << value2);
-		case B_RS : return (value1 >> value2);
-		case L_AND : return (value1 && value2);
-		case L_OR : return (value1 || value2);
+		case POW : return pow(value1, value2);
 		default : cout << "Calculate1 error\n";
 	}
-	return 0;
+	return -1;
 }
 
-int Calculate2(int value, int operat)
+double Calculate2(double value, double operat)
 {
-	if (operat == B_NOT) return ~(value);
-	if (operat == L_NOT) return !(value);
-	if (operat == U_ADD) return +(value);
-	if (operat == U_SUB) return -(value);
-	else {
-		cout << "Calculate2 error\n";
-		return 0;
+	switch ((int)operat) {
+		case U_ADD : return +(value);
+		case U_SUB : return -(value);
+		case SIN : return sin(value);
+		case COS : return cos(value);
+		case EXP : return exp(value);
+		case LOG : return log(value);
+		case SQRT : return sqrt(value);
+		case FABS : return fabs(value);
+		default : cout << "Calculate2 error\n";
 	}
+	return -1;
 }
 
 void DATA::Execute()
 {
-	stack<int> number;
-	stack<int> operators;
-	int value1, value2;
+	stack<double> number;
+	double value1, value2;
 
 	for (int pos = 0 ; pos < postfix.size() ; pos++) {
-		if (!postfix[pos].isFunction) {
-			number.push(postfix[pos].element);
-		} else if (postfix[pos].isFunction) {
-			if (postfix[pos].element == B_NOT || postfix[pos].element == L_NOT || postfix[pos].element == U_ADD || postfix[pos].element == U_SUB) {
-				value1 = number.top(); number.pop();
-				result = Calculate2(value1, postfix[pos].element);
-				number.push(result);
-			} else {
+		EQUATION now = postfix[pos];
+		if (!now.isFunction) {
+			number.push(now.element);
+		} else if (now.isFunction) {
+			if (now.element == ADD || now.element == SUB || now.element == MUL || now.element == POW) {
 				value2 = number.top(); number.pop();
 				value1 = number.top(); number.pop();
-				result = Calculate1(value1, postfix[pos].element, value2);
+				result = Calculate1(value1, now.element, value2);
+				number.push(result);
+			} else {
+				value1 = number.top(); number.pop();
+				result = Calculate2(value1, now.element);
 				number.push(result);
 			}
 		} 
 	}
-	printf("RESULT: %d\n", result);
+	printf("RESULT: %f\n", result);
 }
 
 int main()
 {
-	while(cin.peek() != EOF) {
+	while(cin.peek() != '\n') {
 		DATA data;
 		data.Read();
 		data.Infix();

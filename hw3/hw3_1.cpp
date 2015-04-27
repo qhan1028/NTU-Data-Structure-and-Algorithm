@@ -40,6 +40,15 @@ void DATA::Read()
 
 bool isNumber(char input) {return (input >= '0' && input <= '9');}
 
+bool isOperand(char input) 
+{
+	char operand[14] = {'+', '-', '*', '/', '%', '&', '^', '|', '<', '>', '(', ')', '~', '!'};
+	for (int i = 0 ; i <= 13 ; i++) {
+		if (input == operand[i]) return true;
+	}
+	return false;
+}
+
 int translate1(char input)
 {
 	switch(input) {
@@ -93,7 +102,7 @@ void DATA::Infix()
 			tmp_num = tmp_num*10 + input[pos]- '0';
 			preNum = 1; continue;
 		}
-		if (!isNumber(input[pos])) {
+		if (isOperand(input[pos])) {
 			EQUATION in;
 			if (preNum) { //first process numbers
 				in.element = tmp_num;
@@ -106,7 +115,7 @@ void DATA::Infix()
 				infix.push_back(in);
 				pos++; //because these operators need two chars
 			} else if (input[pos] == '+' || input[pos] == '-') {
-				if (pos == 0 || (input[pos-1] != ')' && !preNum) ) {
+				if (pos == 0 || (infix[infix.size()-1].element != P_R && !preNum) ) {
 					in.element = translate3(input[pos]);
 					infix.push_back(in);
 				} else {
@@ -132,14 +141,12 @@ void DATA::Postfix()
 {
 	stack<int> operators;
 	for (int pos = 0 ; pos <= infix.size() ; pos++) {
-		if (pos == infix.size()) { //end
-			while (!operators.empty()) {
-				EQUATION post;
-				post.element = operators.top();
-				post.isFunction = 1;
-				postfix.push_back(post);
-				operators.pop();
-			}
+		 while (pos == infix.size() && !operators.empty()) {//end
+			EQUATION post;
+			post.element = operators.top();
+			post.isFunction = 1;
+			postfix.push_back(post);
+			operators.pop();
 		}
 		if (!infix[pos].isFunction) { //numbers
 			postfix.push_back(infix[pos]);
@@ -168,8 +175,8 @@ void DATA::Postfix()
 		}
 	}
 	cout << "Postfix Exp: ";
-	for (int pos = 0 ; pos < postfix.size()-1 ; pos++) {
-		if (!postfix[pos].isFunction) cout << postfix[pos].element << " ";
+	for (int pos = 0 ; pos < postfix.size() ; pos++) {
+		if (postfix[pos].isFunction == 0 && pos != postfix.size()-1) cout << postfix[pos].element << " ";
 		else printFunc(postfix[pos].element);
 	}
 	cout << "\n";
