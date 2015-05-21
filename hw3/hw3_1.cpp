@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdio>
+#include <cstring>
 #include <stack>
 #include <vector>
 #include "hw3_1.h"
@@ -34,8 +35,8 @@ DATA::~DATA() { delete [] input;}
 
 void DATA::Read()
 {
-	cin.getline(input, MAX);
-	input_size = cin.gcount();
+	fgets(input, MAX, stdin);
+	input_size = strlen(input);
 }
 
 bool isNumber(char input) {return (input >= '0' && input <= '9');}
@@ -101,8 +102,7 @@ void DATA::Infix()
 		if (isNumber(input[pos])) { //numbers have many digits
 			tmp_num = tmp_num*10 + input[pos]- '0';
 			preNum = 1; continue;
-		}
-		if (isOperand(input[pos])) {
+		} else if (isOperand(input[pos])) {
 			EQUATION in;
 			if (preNum) { //first process numbers
 				in.element = tmp_num;
@@ -110,7 +110,7 @@ void DATA::Infix()
 				infix.push_back(in);
 			} 
 			in.isFunction = 1;
-			if (input[pos] == input[pos+1] && input[pos] != '(' && input[pos] != ')' && input[pos] != '+' && input[pos] != '-') {
+			if (input[pos] == input[pos+1] && input[pos] != '(' && input[pos] != ')' && input[pos] != '+' && input[pos] != '-' && input[pos] != '!' && input[pos] != '~') {
 				in.element = translate1(input[pos]);
 				infix.push_back(in);
 				pos++; //because these operators need two chars
@@ -127,13 +127,20 @@ void DATA::Infix()
 				infix.push_back(in);
 			}
 			preNum = tmp_num = 0;
+		} else if (preNum) { //numbers have many digits
+			EQUATION in;
+			in.element = tmp_num;
+			in.isFunction = 0;
+			infix.push_back(in);
+			preNum = 0; 
 		}
 	}
 }
 
 bool TopIsBigger(int input, int top)
 {
-	if (top == P_L) return false; //force the operand behind the P_L push into the stack
+	if (top == P_L) return false;//force the operand behind the P_L push into the stack
+	else if ((top == U_ADD || top == U_SUB || top == B_NOT || top == L_NOT) && (input == U_ADD || input == U_SUB || input == B_NOT || input == L_NOT)) return false;
 	else return (top/10-input/10 >= 0)? true : false;
 }
 
@@ -251,6 +258,7 @@ void DATA::Execute()
 	for (int pos = 0 ; pos < postfix.size() ; pos++) {
 		if (!postfix[pos].isFunction) {
 			number.push(postfix[pos].element);
+			if (postfix.size() == 1) result = postfix[pos].element;
 		} else if (postfix[pos].isFunction) {
 			if (postfix[pos].element == B_NOT || postfix[pos].element == L_NOT || postfix[pos].element == U_ADD || postfix[pos].element == U_SUB) {
 				value1 = number.top(); number.pop();

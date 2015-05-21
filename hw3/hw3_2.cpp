@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdio>
+#include <cstring>
 #include <stack>
 #include <vector>
 #include <cmath>
@@ -35,8 +36,8 @@ DATA::~DATA() { delete [] input;}
 
 void DATA::Read()
 {
-	cin.getline(input, MAX);
-	input_size = cin.gcount();
+	fgets(input, MAX, stdin);
+	input_size = strlen(input);
 }
 
 bool isNumber(char input) {return (input >= '0' && input <= '9') || input == '.';}
@@ -112,8 +113,7 @@ void DATA::Infix()
 				tmp_num = tmp_num*10 + input[pos] - '0';
 				preNum = 1; continue;
 			}
-		}
-		if (isOperat(input[pos])) {
+		} else if (isOperat(input[pos])) {
 			EQUATION in;
 			if (preNum) { //first process numbers
 				for (int i = 0 ; i < frac_count ; i++) tmp_num /= 10;
@@ -132,13 +132,14 @@ void DATA::Infix()
 				infix.push_back(in);
 			}
 			frac_count = fraction = preNum = tmp_num = 0;
-		}
+		} 
 	}
 }
 
 bool TopIsBigger(double input, double top)
 {
 	if (top == P_L) return false; //force the operand behind the P_L push into the stack
+	else if ((top == U_ADD || top == U_SUB) && (input == U_ADD || input == U_SUB)) return false;
 	else return ((int)top/10-(int)input/10 >= 0)? true : false;
 }
 
@@ -252,6 +253,7 @@ void DATA::Execute()
 		EQUATION now = postfix[pos];
 		if (!now.isFunction) {
 			number.push(now.element);
+			if (postfix.size() == 1) result = now.element;
 		} else if (now.isFunction) {
 			if (now.element == ADD || now.element == SUB || now.element == MUL || now.element == POW) {
 				value2 = number.top(); number.pop();
@@ -270,7 +272,7 @@ void DATA::Execute()
 
 int main()
 {
-	while(cin.peek() != '\n') {
+	while(cin.peek() != EOF) {
 		DATA data;
 		data.Read();
 		data.Infix();

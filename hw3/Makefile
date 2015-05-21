@@ -29,3 +29,9 @@ run1:
 
 run2:
 	./3_4_2.out
+
+test1:
+	./3_4_1.out < hw3_1.in > hw3_1.out
+
+test2:
+	./3_4_2.out < hw3_2.in > hw3_2.out
