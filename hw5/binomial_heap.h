@@ -44,18 +44,18 @@ class BinomialHeap {
          */
         CarrySum merge_tree(BT *a, BT *b, BT *c) {
             // write your code here.
-            CarrySum temp;
+            CarrySum temp(nullptr, nullptr);
             if (a != nullptr && b != nullptr) {
-                temp.first = (a->element > b->element) a : b;
-                temp.first.children.push_back(b);
+                temp.first = (a->element > b->element)? a : b;
+                temp.first->children.push_back(b);
                 temp.second = c;
             }
-            if (a != nullptr %% c != nullptr) {
-                temp.first = (a->element > c->element) a : c;
+            if (a != nullptr && c != nullptr) {
+                temp.first = (a->element > c->element)? a : c;
                 temp.second = nullptr;
             }
             if (b != nullptr && c != nullptr) {
-                temp.first = (a->element > c->element) b : c;
+                temp.first = (a->element > c->element)? b : c;
                 temp.second = nullptr;
             }
             else {
@@ -80,21 +80,22 @@ class BinomialHeap {
             // write your code here.
             MaxRemainder temp;
             temp.first = a->element;
-            i = 0;
+            int i = 0;
             while (!a->children.empty()) {
-                temp.second.trees[i] = a.children.front();
-                a.children.pop_front();
+                temp.second.trees[i] = a->children.front();
+                a->children.pop_front();
                 i++;
             }
             temp.second.size = -1;
             delete a;
             return temp;
-        }
+        };
 
-        int size;
+        
         BT* trees[32]; //binomial trees of the binomial heap, where trees[i] is a tree with size 2^i.
 
     public:
+        int size;
         BinomialHeap(): size(0) {
             for(int i=0; i<32; ++i) trees[i] = nullptr;
         }
@@ -112,7 +113,15 @@ class BinomialHeap {
             CarrySum temp;
             temp = merge_tree(trees[0], b.trees[0], nullptr);
             trees[0] = temp.second;
-            for
+            for (int i = 1 ; i < 32 ; i++) {
+                temp = merge_tree(trees[i], b.trees[i], temp.first);
+                trees[i] = temp.second;
+            }
+            size += b.size;
+            b.size = 0;
+            for (int i = 0 ; i < 32 ; i++) {
+                b.trees[i] = nullptr;
+            }
         }
 
         void insert(const T &element) {
@@ -125,7 +134,7 @@ class BinomialHeap {
                 //find the tree contains maximum element
                 int max_tree = -1;
                 for(int i=0; i<32; ++i)
-                    if(trees[i]->size() > 0 && (max_tree == -1 || trees[i]->element > trees[max_tree]->element))
+                    if(trees[i] != nullptr && (max_tree == -1 || trees[i]->element > trees[max_tree]->element))
                         max_tree = i;
 
                 MaxRemainder m_r = pop_max(trees[max_tree]);
@@ -136,5 +145,12 @@ class BinomialHeap {
                 merge(remainder);
                 return max_element;
             }
+        }
+        int max_p() {
+            int max = 0;
+            for (int i = 0 ; i < 32 ; i++) {
+                if (trees[i]->element.p >= max) max = trees[i]->element.p;
+            }
+            return max;
         }
 };
