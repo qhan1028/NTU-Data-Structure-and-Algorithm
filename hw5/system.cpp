@@ -19,7 +19,7 @@ int main()
 {
 	int cm1 = 0, cm2 = 0;
 	int c = 0, w = 0;
-	printf("Input the number of computers and w : ");
+	//printf("Input the number of computers and w : ");
 	scanf("%d%d", &c, &w);
 	BinomialHeap<CMD> *computer = new BinomialHeap<CMD> [c];
 	char input[INMAX];
@@ -32,12 +32,14 @@ int main()
 		}
 		if (strcmp(input, "execute") == 0) {
 			scanf("%d", &cm1);
-			temp = computer[cm1].pop();
-			printf("Computer %d execute task %d.\n", cm1, temp.id);
-			while (computer[cm1].size != 0 && computer[cm1].max_p() == temp.p) {
+			if (computer[cm1].size > 0) {
 				temp = computer[cm1].pop();
 				printf("Computer %d execute task %d.\n", cm1, temp.id);
-			}
+				while (computer[cm1].size != 0 && computer[cm1].max_p() == temp.p) {
+					temp = computer[cm1].pop();
+					printf("Computer %d execute task %d.\n", cm1, temp.id);
+				}
+			} else printf("There are no tasks on computer %d.\n", cm1);
 		}
 		if (strcmp(input, "merge") == 0) {
 			scanf("%d%d", &cm1, &cm2);

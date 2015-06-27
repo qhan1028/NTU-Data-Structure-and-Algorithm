@@ -8,11 +8,11 @@ class BinomialHeap {
     private:
         /* inner class: binomial tree */
         struct BinomialTree {
-            int _size;
+            //int _size;
             T element;
             std::list<BinomialTree*> children;
 
-            BinomialTree(T _ele): _size(1), element(_ele) {
+            BinomialTree(T _ele): /*_size(1),*/ element(_ele) {
                 children.clear();
             }
 
@@ -20,9 +20,9 @@ class BinomialHeap {
              * #note that nullptr->size() == 0
              * (nullptr is a null pointer (like NULL in C))
              */
-            int size() {
+            /*int size() {
                 return (this!=nullptr)?this->_size:0;
-            }
+            }*/
         };
         /* some definition for convinience
          */
@@ -47,23 +47,18 @@ class BinomialHeap {
             CarrySum temp(nullptr, nullptr);
             if (a != nullptr && b != nullptr) {
                 temp.first = (a->element > b->element)? a : b;
-                temp.first->children.push_back(b);
+                temp.first->children.push_back((a->element > b->element)? b : a);
                 temp.second = c;
-            }
-            if (a != nullptr && c != nullptr) {
+            } else if (a != nullptr && c != nullptr) {
                 temp.first = (a->element > c->element)? a : c;
-                temp.second = nullptr;
-            }
-            if (b != nullptr && c != nullptr) {
-                temp.first = (a->element > c->element)? b : c;
-                temp.second = nullptr;
-            }
-            else {
-                temp.first = nullptr;
+                temp.first->children.push_back((a->element > c->element)? c : a);
+            } else if (b != nullptr && c != nullptr) {
+                temp.first = (b->element > c->element)? b : c;
+                temp.first->children.push_back((b->element > c->element)? c : b);
+            } else {
                 if (a != nullptr) temp.second = a;
                 if (b != nullptr) temp.second = b;
                 if (c != nullptr) temp.second = c;
-                else temp.second = nullptr;
             }
             return temp;
         };
@@ -78,10 +73,11 @@ class BinomialHeap {
          */
         MaxRemainder pop_max(BT *a) {
             // write your code here.
+            if (a == nullptr) printf("error\n");
             MaxRemainder temp;
             temp.first = a->element;
             int i = 0;
-            while (!a->children.empty()) {
+            while (!a->children.empty()) { 
                 temp.second.trees[i] = a->children.front();
                 a->children.pop_front();
                 i++;
@@ -90,10 +86,7 @@ class BinomialHeap {
             delete a;
             return temp;
         };
-
-        
         BT* trees[32]; //binomial trees of the binomial heap, where trees[i] is a tree with size 2^i.
-
     public:
         int size;
         BinomialHeap(): size(0) {
@@ -136,7 +129,6 @@ class BinomialHeap {
                 for(int i=0; i<32; ++i)
                     if(trees[i] != nullptr && (max_tree == -1 || trees[i]->element > trees[max_tree]->element))
                         max_tree = i;
-
                 MaxRemainder m_r = pop_max(trees[max_tree]);
                 T &max_element = m_r.first;
                 BH &remainder = m_r.second;
@@ -149,7 +141,7 @@ class BinomialHeap {
         int max_p() {
             int max = 0;
             for (int i = 0 ; i < 32 ; i++) {
-                if (trees[i]->element.p >= max) max = trees[i]->element.p;
+                if (trees[i] != nullptr && trees[i]->element.p >= max) max = trees[i]->element.p;
             }
             return max;
         }
