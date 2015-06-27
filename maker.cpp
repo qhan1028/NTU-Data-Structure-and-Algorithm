@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 	srand(time(NULL));
 	for (int i = 0 ; i < 62 ; i++) {
 		char c = trans(i);
-		int m = rand() * rand() % 100000000;
+		int m = abs(rand() * rand() % 1000000000);
 		printf("create %c %c\n", c, c);
 		printf("login %c %c\n", c, c);
 		printf("deposit %d\n", m);
@@ -22,10 +22,9 @@ int main(int argc, char *argv[])
 	char now = '0';
 	int max = atoi(argv[1]);
 	for (int i = 0 ; i < max ; i++) {
-		int f = rand()%8;
 		char c = trans(rand()%62);
 		char d = trans(rand()%62);
-		switch (f) {
+		switch (rand()%8) {
 			case 0 :
 				printf("login %c %c\n", c, c);
 				now = c;
