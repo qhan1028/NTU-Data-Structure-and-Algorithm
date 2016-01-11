@@ -1,0 +1,9 @@
+create g1 dsa2015
+create ab0 dsa1337
+create aabb dsa1126
+create g1 dsa2115
+login g1 dsa2015
+deposit 5000
+find a*b*
+transfer aabb 2499
+search aabb

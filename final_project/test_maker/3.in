@@ -1,0 +1,43 @@
+create a 1
+create b 2
+create c 3
+create d 4
+create e 5
+login a 1
+deposit 1000
+withdraw 100
+transfer b 20
+transfer c 30
+transfer d 40
+transfer e 50
+login b 2
+transfer c 10
+login d 4
+merge c 3 b 2
+login a 1
+search b
+search c
+login b 2
+login c 3
+search c
+create 34tr3i6t4a67i4ntrgfc7ynta6tria76bt4rc qgw43u7rctawi467agw6i7ra3t6na
+create haliwethcao7w4etcgaelir7tgae3784y5387 liwe4ca7iweltrna784etn8er7t74ae4nta87
+create ae85ytcaecl8tea746nytgrca7un4 alwi47bgtrca7i4ecngtroq32847trcn3q87
+create q3l478ntrcgae784oq3847cqo7843untrco3q84t OUILDGNLSIDa48yq4eota78eny47t
+create asdfawrietalmire7tga 1348765293847
+create 1234567890 asdflasgdhka
+create asfglaieumaiouerlhgaieurhgaleirhjelairuhngmaevlgcfneakyufcneaykucnauyncfgae 134876523984765293784
+create abcdefg 1234567
+create abcdef 123456
+create abcde 12345
+create abcd 1234
+create abc 123
+create ab 12
+find *
+find *a
+find *a*
+find *bcd*
+find *ef
+find ?b*
+find 3?t*
+find *c*c*c*

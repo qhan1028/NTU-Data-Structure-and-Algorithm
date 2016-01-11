@@ -1,0 +1,23 @@
+create g1 dsa2015
+create ab0 dsa1337
+create aabb dsa1126
+create g1 dsa2115
+login g1 dsa2015
+deposit 5000
+transfer aabb 2499
+withdraw 100
+transfer ab0 200
+search aabb
+login ab0 dsa1337
+transfer aabb 300
+transfer aabb 50
+merge g1 dsa2015 aabb dsa1126
+login g1 dsa2015
+search ab0
+search aabb
+search g1
+delete aabb dsa1126
+create aabb dsa1127
+transfer abbb
+transfer aabb 20
+search aabb
